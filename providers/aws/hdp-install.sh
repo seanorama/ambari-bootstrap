@@ -1,8 +1,15 @@
+
+# Requirements
+# ============
+
 wget https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py 
-sudo pip install awscli 
-wget http://stedolan.github.io/jq/download/linux64/jq
-chmod a+x jq
+sudo python get-pip.py
+sudo pip install awscli
+sudo pip install jq
+#wget http://stedolan.github.io/jq/download/linux64/jq
+#chmod a+x jq
+
+
 
 masterNodes=$(aws ec2 describe-instances --query 'Reservations[].Instances[].[PrivateDnsName,Tags[?Key == `aws:cloudformation:stack-name`] | [0].Value, Tags[?Key == `aws:cloudformation:logical-id`] | [0].Value]' --output text | grep MasterNode | cut -f 1)
 
@@ -20,7 +27,10 @@ cat > ambari.blueprint << 'EOF'
         { "name" : "ZOOKEEPER_SERVER" },
         { "name" : "GANGLIA_SERVER" },
         { "name" : "GANGLIA_MONITOR" },
-        { "name" : "APP_TIMELINE_SERVER" }
+        { "name" : "APP_TIMELINE_SERVER" },
+        { "name" : "HIVE_METASTORE" },
+        { "name" : "HIVE_SERVER" },
+        { "name" : "MYSQL_SERVER" }
       ],
       "cardinality" : "1" 
     },
@@ -32,7 +42,9 @@ cat > ambari.blueprint << 'EOF'
         { "name" : "YARN_CLIENT" },
         { "name" : "MAPREDUCE2_CLIENT" },
         { "name" : "ZOOKEEPER_CLIENT" },
-        { "name" : "GANGLIA_MONITOR" }  
+        { "name" : "GANGLIA_MONITOR" },
+        { "name" : "TEZ_CLIENT" },
+        { "name" : "HIVE_CLIENT" }
       ],
       "cardinality" : "1+" 
     } 
@@ -77,7 +89,7 @@ cat >> cluster.blueprint << 'EOF'
 }
 EOF
 
-createBlueprint=$(curl -H "X-Requested-By: ambari" -u admin:admin http://localhost:8080/api/v1/blueprints/multi-node-hdfs-yarn1 -d @ambari.blueprint
+createBlueprint=$(curl -H "X-Requested-By: ambari" -u admin:admin http://localhost:8080/api/v1/blueprints/multi-node-hdfs-yarn1 -d @ambari.blueprint)
 
 createCluster=$(curl -H "X-Requested-By: ambari" -u admin:admin http://localhost:8080/api/v1/clusters/SimpleCluster -d @cluster.blueprint)
 
