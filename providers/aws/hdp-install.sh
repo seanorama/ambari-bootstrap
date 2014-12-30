@@ -4,13 +4,18 @@ sudo pip install awscli
 wget http://stedolan.github.io/jq/download/linux64/jq
 chmod a+x jq
 
-ambariPublicIP=$(aws ec2 describe-instances --query 'Reservations[].Instances[].[PublicIpAddress,Tags[?Key == `aws:cloudformation:stack-name`] | [0].Value, Tags[?Key == `aws:cloudformation:logical-id`] | [0].Value]' --output text | grep AmbariNode | cut -f 1)
-echo Ambari is available at: http://$ambariPublicIP:8080/
+aws configure
 
-masterNodes=$(aws ec2 describe-instances --query 'Reservations[].Instances[].[PrivateDnsName,Tags[?Key == `aws:cloudformation:stack-name`] | [0].Value, Tags[?Key == `aws:cloudformation:logical-id`] | [0].Value]' --output text | grep MasterNode | cut -f 1)
+# replace with the name of your deployed stack
+stackName=hdp2
 
-workerNodes=$(aws ec2 describe-instances --query 'Reservations[].Instances[].[PrivateDnsName,Tags[?Key == `aws:cloudformation:stack-name`] | [0].Value, Tags[?Key == `aws:cloudformation:logical-id`] | [0].Value]' --output text | grep WorkerNodes | cut -f 1)
+ambariNode=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:logical-id,Values=AmbariNode" "Name=tag:aws:cloudformation:stack-name,Values=$stackName" --query 'Reservations[].Instances[].[PublicIpAddress]' --output text)
+echo Ambari is available at: http://$ambariNode:8080/
 
+masterNodes=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:logical-id,Values=MasterNode" "Name=tag:aws:cloudformation:stack-name,Values=$stackName" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
+workerNodes=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:logical-id,Values=WorkerNodes" "Name=tag:aws:cloudformation:stack-name,Values=$stackName" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
+
+echo creating blueprint at ./ambari.blueprint
 cat > ambari.blueprint << 'EOF'
 {
   "configurations" : {
@@ -62,6 +67,7 @@ cat > ambari.blueprint << 'EOF'
 }
 EOF
 
+echo creating cluster host groups blueprint at ./cluster.blueprint
 cat > cluster.blueprint << 'EOF'
 {
   "blueprint" : "single-master",
@@ -94,14 +100,14 @@ cat >> cluster.blueprint << 'EOF'
 }
 EOF
 
-AMBARI_CURL='curl -su admin:admin -H X-Requested-By:ambari'
-AMBARI_API='http://localhost:8080/api/v1'
+AMBARI_CURL="curl -su admin:admin -H X-Requested-By:ambari"
+AMBARI_API="http://localhost:8080/api/v1"
 
 createBlueprint=$($AMBARI_CURL $AMBARI_API/blueprints/single-master -d @ambari.blueprint)
 
 createCluster=$($AMBARI_CURL $AMBARI_API/clusters/SimpleCluster -d @cluster.blueprint)
 
-requestURL=$(echo $createCluster | ./jq '.href')
+requestURL=$(echo $createCluster | ./jq '.href' | tr -d \")
 
 requestStatus=$($AMBARI_CURL $requestURL)
 echo $requestStatus | ./jq '.Requests.request_status'
