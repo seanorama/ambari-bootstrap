@@ -1,5 +1,21 @@
+#!/usr/bin/env bash
+
 set -e
 
+# Configuration
+# =============
+
+AMBARI_HOST=${AMBARI_HOST:-localhost}
+# replace with name of your CloudFormation Stack
+STACK=hdp-simple
+
+
+AMBARI_CURL="curl -su admin:admin -H X-Requested-By:ambari"
+AMBARI_API="http://${AMBARI_HOST}:8080/api/v1"
+
+
+# Requirements
+# ============
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
@@ -8,13 +24,12 @@ sudo yum install jq
 aws configure
 
 # replace with the name of your deployed stack
-stackName=hdp-simple
 
-ambariNode=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:logical-id,Values=AmbariNode" "Name=tag:aws:cloudformation:stack-name,Values=$stackName" --query 'Reservations[].Instances[].[PublicIpAddress]' --output text)
+ambariNode=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:aws:cloudformation:logical-id,Values=AmbariNode" "Name=tag:aws:cloudformation:stack-name,Values=$STACK" --query 'Reservations[].Instances[].[PublicIpAddress]' --output text)
 echo Ambari is available at: http://$ambariNode:8080/
 
-masterNodes=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:logical-id,Values=MasterNode" "Name=tag:aws:cloudformation:stack-name,Values=$stackName" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
-workerNodes=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:logical-id,Values=WorkerNodes" "Name=tag:aws:cloudformation:stack-name,Values=$stackName" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
+masterNodes=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:aws:cloudformation:logical-id,Values=MasterNode" "Name=tag:aws:cloudformation:stack-name,Values=$STACK" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
+workerNodes=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:aws:cloudformation:logical-id,Values=WorkerNodes" "Name=tag:aws:cloudformation:stack-name,Values=$STACK" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
 
 nodes=""; for node in $workerNodes $masterNodes; do nodes=$(printf '%s"%s"' "$nodes", "$node"); done; nodes="[ ${nodes#,} ]"
 
@@ -106,10 +121,6 @@ cat >> cluster.blueprint << 'EOF'
   ]
 }
 EOF
-
-AMBARI_CURL="curl -su admin:admin -H X-Requested-By:ambari"
-AMBARI_API="http://localhost:8080/api/v1"
-
 
 createBlueprint=$($AMBARI_CURL $AMBARI_API/blueprints/single-master -d @ambari.blueprint)
 
