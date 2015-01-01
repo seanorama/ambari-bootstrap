@@ -1,40 +1,64 @@
 #!/usr/bin/env bash
+#
+# HDP 2.2 install using Ambari & Cloudformation
+#
+# Current features:
+#  - Populates hosts list from AWS
+#  - Can be run from any host with access to :8080 on the Ambari Server
+#
+# Usage: ./install-hdp.sh
+#  - assumes Cloudformation stack name of 'hdp-simple'
+#    - Override with: cfn_stack=YOURSTACKNAME ./hdp-install.sh
+#
+# Requirements:
+#  - bash, aws-cli, jq, curl, sed
+#
+#################################
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
 
-# Configuration
-# =============
+my_aws_get_hosts() {
+    aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" \
+        "Name=tag:aws:cloudformation:logical-id,Values=${logical_id}" \
+        "Name=tag:aws:cloudformation:stack-name,Values=${cfn_stack}" \
+        --query "Reservations[].Instances[].[${query}]" --output text
+}
 
-AMBARI_HOST=${AMBARI_HOST:-localhost}
-# replace with name of your CloudFormation Stack
-STACK=hdp-simple
+my_aws_prep() {
+# install requirements on redhat-6
+if [[ "$(python -mplatform)" == *"redhat-6"* ]]; then
+  hash aws 2>/dev/null || \
+      curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip";\
+      unzip awscli-bundle.zip;\
+      sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+  hash jq 2>/dev/null || sudo yum install -y jq
+fi
 
+# check requirements
+hash aws 2>/dev/null || { echo >&2 "I require awscli but it's not installed.  Aborting."; exit 1; }
+hash jq 2>/dev/null || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
+hash curl 2>/dev/null || { echo >&2 "I require curl but it's not installed.  Aborting."; exit 1; }
 
-AMBARI_CURL="curl -su admin:admin -H X-Requested-By:ambari"
-AMBARI_API="http://${AMBARI_HOST}:8080/api/v1"
-
-
-# Requirements
-# ============
-curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-unzip awscli-bundle.zip
-sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-sudo yum install jq
-
+# configure aws: should add a check to see if already configured
 aws configure
 
-# replace with the name of your deployed stack
+# populate host list variables
+ambari_host=$(logical_id="AmbariNode" query="PublicDnsName" my_aws_get_hosts)
+master_nodes=$(logical_id="MasterNode" query="PrivateDnsName" my_aws_get_hosts)
+worker_nodes=$(logical_id="WorkerNodes" query="PrivateDnsName" my_aws_get_hosts)
+}
 
-ambariNode=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:aws:cloudformation:logical-id,Values=AmbariNode" "Name=tag:aws:cloudformation:stack-name,Values=$STACK" --query 'Reservations[].Instances[].[PublicIpAddress]' --output text)
-echo Ambari is available at: http://$ambariNode:8080/
-
-masterNodes=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:aws:cloudformation:logical-id,Values=MasterNode" "Name=tag:aws:cloudformation:stack-name,Values=$STACK" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
-workerNodes=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:aws:cloudformation:logical-id,Values=WorkerNodes" "Name=tag:aws:cloudformation:stack-name,Values=$STACK" --query 'Reservations[].Instances[].[PrivateDnsName]' --output text)
-
-nodes=""; for node in $workerNodes $masterNodes; do nodes=$(printf '%s"%s"' "$nodes", "$node"); done; nodes="[ ${nodes#,} ]"
+### Configuration
+cfn_stack=${cfn_stack:-"hdp-simple"}
+my_aws_prep
+ambari_curl="curl -su admin:admin -H X-Requested-By:ambari"
+ambari_host=${ambari_host:-"localhost"}
+ambari_api="http://${ambari_host}:8080/api/v1"
 
 echo creating blueprint at ./ambari.blueprint
-cat > ambari.blueprint << 'EOF'
+cat > ambari.blueprint <<-'EOF'
 {
   "configurations" : {
       "hive-site" : {
@@ -99,7 +123,7 @@ cat > cluster.blueprint << 'EOF'
       "hosts" : [ 
 EOF
 
-for node in $masterNodes; do echo '        { "fqdn" : "'$node'" },'; done >> cluster.blueprint 
+for node in ${master_nodes}; do echo '        { "fqdn" : "'$node'" },'; done >> cluster.blueprint 
 
 sed '$ s/,//g' -i cluster.blueprint
 
@@ -111,7 +135,7 @@ cat >> cluster.blueprint << 'EOF'
       "hosts" : [
 EOF
 
-for node in $workerNodes; do echo '        { "fqdn" : "'$node'" },'; done >> cluster.blueprint 
+for node in $worker_nodes; do echo '        { "fqdn" : "'$node'" },'; done >> cluster.blueprint 
 
 sed '$ s/,//g' -i cluster.blueprint
 
@@ -122,10 +146,11 @@ cat >> cluster.blueprint << 'EOF'
 }
 EOF
 
-createBlueprint=$($AMBARI_CURL $AMBARI_API/blueprints/single-master -d @ambari.blueprint)
+# now to start the show
+create_blueprint=$($ambari_curl $ambari_api/blueprints/single-master -d @ambari.blueprint)
+echo $create_blueprint
+create_cluster=$($ambari_curl $ambari_api/clusters/simple -d @cluster.blueprint)
+echo $create_cluster
 
-createCluster=$($AMBARI_CURL $AMBARI_API/clusters/simple -d @cluster.blueprint)
-
-requestURL=$(echo $createCluster | jq '.href' | tr -d \")
-
-watch -n 10 "$AMBARI_CURL $requestURL | jq '.Requests'"
+echo "Check the cluster creation status with:"
+echo "  $ambari_curl $(echo $create_cluster | jq '.href' | tr -d \") | jq '.Requests'"
