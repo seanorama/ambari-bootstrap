@@ -183,8 +183,6 @@ cat >> cluster.blueprint << 'EOF'
 }
 EOF
 
-exit
-
 ## Create the blueprint & the clsuter
 create_blueprint=$($ambari_curl $ambari_api/blueprints/simple -d @ambari.blueprint)
 echo $create_blueprint
