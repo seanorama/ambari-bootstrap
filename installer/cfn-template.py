@@ -1,20 +1,24 @@
-from troposphere import Base64, Select, FindInMap, GetAtt, GetAZs, Join, Output
+#!/usr/bin/env python
+
+# generates an AWS CloudFormation template for an
+#   Apache Ambari & Hortonworks Data Platform cluster
+
+from troposphere import Base64, Select, FindInMap, GetAtt, Join
 from troposphere import Template, Condition, Equals, And, Or, Not, If
-from troposphere import Parameter, Ref, Tags, Template
+from troposphere import Parameter, Ref, Tags, Template, Output
 from troposphere.autoscaling import LaunchConfiguration, AutoScalingGroup
-from troposphere.ec2 import Instance, BlockDeviceMapping, EBSBlockDevice
-from troposphere.iam import InstanceProfile, Role
-from troposphere.ec2 import PortRange, NetworkInterfaceProperty
-from troposphere.ec2 import Subnet, SubnetRouteTableAssociation
-from troposphere.ec2 import Route, RouteTable
-from troposphere.ec2 import SecurityGroup, SecurityGroupRule, InternetGateway
-from troposphere.ec2 import VPC, VPCGatewayAttachment
-from troposphere.iam import Policy, PolicyType
-from troposphere.cloudformation import Init
-from troposphere.cloudfront import Distribution, DistributionConfig
-from troposphere.cloudfront import Origin, DefaultCacheBehavior
+import troposphere.ec2 as ec2
+import troposphere.iam as iam
 from troposphere.policies import CreationPolicy, ResourceSignal
 
+# things you may want to change
+ref_disk_all_root_volumesize = "100"
+ref_disk_master_ebs_diskcount = 2
+ref_disk_master_ebs_volumesize = "500"
+ref_disk_worker_ebs_diskcount = 9
+ref_disk_worker_ebs_volumesize = "1000"
+
+# Don't touch these
 ref_stack_id = Ref('AWS::StackId')
 ref_region = Ref('AWS::Region')
 ref_stack_name = Ref('AWS::StackName')
@@ -22,12 +26,17 @@ ref_ambariserver = GetAtt('AmbariNode',
                         'PrivateDnsName')
 ref_java_provider = Ref('JavaProvider')
 
+
+# now the work begins
 t = Template()
 
 t.add_version("2010-09-09")
 
 t.add_description("""\
 CloudFormation template to Deploy Hortonworks Data Platform on VPC with a public subnet""")
+
+## Parameters
+
 AmbariInstanceType = t.add_parameter(Parameter(
     "AmbariInstanceType",
     Default="m3.large",
@@ -117,8 +126,8 @@ WorkerUseEBS = t.add_parameter(Parameter(
     AllowedValues=["yes", "no"],
 ))
 
-MasterUseEBSBool = t.add_condition("MasterUseEBSBool", Equals(Ref("MasterUseEBS"),"yes"))
-WorkerUseEBSBool = t.add_condition("WorkerUseEBSBool", Equals(Ref("WorkerUseEBS"),"yes"))
+MasterUseEBSBool = t.add_condition("MasterUseEBSBool", Equals(Ref(MasterUseEBS),"yes"))
+WorkerUseEBSBool = t.add_condition("WorkerUseEBSBool", Equals(Ref(WorkerUseEBS),"yes"))
 
 t.add_mapping("SubnetConfig",
     {'Public': {'CIDR': '10.0.0.0/24'}, 'VPC': {'CIDR': '10.0.0.0/16'}}
@@ -135,69 +144,69 @@ t.add_mapping("RHEL66",
      'us-west-2': {'AMI': 'ami-5fbcf36f'}}
 )
 
-VPC = t.add_resource(VPC(
+VPC = t.add_resource(ec2.VPC(
     "VPC",
     EnableDnsSupport="true",
     CidrBlock=FindInMap("SubnetConfig", "VPC", "CIDR"),
     EnableDnsHostnames="true",
 ))
 
-InternetGateway = t.add_resource(InternetGateway(
+InternetGateway = t.add_resource(ec2.InternetGateway(
     "InternetGateway",
 ))
 
-PublicSubnet = t.add_resource(Subnet(
+PublicSubnet = t.add_resource(ec2.Subnet(
     "PublicSubnet",
     VpcId=Ref("VPC"),
     CidrBlock=FindInMap("SubnetConfig", "Public", "CIDR"),
 ))
 
-CFNRolePolicies = t.add_resource(PolicyType(
+CFNRolePolicies = t.add_resource(iam.PolicyType(
     "CFNRolePolicies",
     PolicyName="CFNaccess",
     PolicyDocument={ "Statement": [{ "Action": "cloudformation:Describe*", "Resource": "*", "Effect": "Allow" }] },
     Roles=[Ref("AmbariAccessRole")],
 ))
 
-AmbariInstanceProfile = t.add_resource(InstanceProfile(
+AmbariInstanceProfile = t.add_resource(iam.InstanceProfile(
     "AmbariInstanceProfile",
     Path="/",
     Roles=[Ref("AmbariAccessRole")],
 ))
 
-NodeAccessRole = t.add_resource(Role(
+NodeAccessRole = t.add_resource(iam.Role(
     "NodeAccessRole",
     Path="/",
     AssumeRolePolicyDocument={ "Statement": [{ "Action": ["sts:AssumeRole"], "Effect": "Allow", "Principal": { "Service": ["ec2.amazonaws.com"] } }] },
 ))
 
 
-PublicRouteTable = t.add_resource(RouteTable(
+PublicRouteTable = t.add_resource(ec2.RouteTable(
     "PublicRouteTable",
     VpcId=Ref(VPC),
 ))
 
-DefaultSecurityGroup = t.add_resource(SecurityGroup(
+DefaultSecurityGroup = t.add_resource(ec2.SecurityGroup(
     "DefaultSecurityGroup",
     GroupDescription="Default Security group for all the Nodes",
     SecurityGroupIngress=[
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="-1", IpProtocol="icmp", CidrIp=FindInMap("SubnetConfig", "VPC", "CIDR"), FromPort="-1"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="65535", IpProtocol="tcp", CidrIp=FindInMap("SubnetConfig", "VPC", "CIDR"), FromPort="0"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="65535", IpProtocol="udp", CidrIp=FindInMap("SubnetConfig", "VPC", "CIDR"), FromPort="0"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="22", IpProtocol="tcp", CidrIp=Ref(SSHLocation), FromPort="22"
         ),
     ],
     VpcId=Ref(VPC),
 ))
 
-PublicRoute = t.add_resource(Route(
+PublicRoute = t.add_resource(ec2.Route(
     "PublicRoute",
     GatewayId=Ref(InternetGateway),
     DestinationCidrBlock="0.0.0.0/0",
@@ -205,13 +214,13 @@ PublicRoute = t.add_resource(Route(
     DependsOn="AttachGateway",
 ))
 
-AmbariAccessRole = t.add_resource(Role(
+AmbariAccessRole = t.add_resource(iam.Role(
     "AmbariAccessRole",
     Path="/",
     AssumeRolePolicyDocument={ "Statement": [{ "Action": ["sts:AssumeRole"], "Effect": "Allow", "Principal": { "Service": ["ec2.amazonaws.com"] } }] },
 ))
 
-PublicSubnetRouteTableAssociation = t.add_resource(SubnetRouteTableAssociation(
+PublicSubnetRouteTableAssociation = t.add_resource(ec2.SubnetRouteTableAssociation(
     "PublicSubnetRouteTableAssociation",
     SubnetId=Ref(PublicSubnet),
     RouteTableId=Ref(PublicRouteTable),
@@ -219,36 +228,36 @@ PublicSubnetRouteTableAssociation = t.add_resource(SubnetRouteTableAssociation(
 
 
 
-S3RolePolicies = t.add_resource(PolicyType(
+S3RolePolicies = t.add_resource(iam.PolicyType(
     "S3RolePolicies",
     PolicyName="s3access",
     PolicyDocument={ "Statement": [{ "Action": "s3:*", "Resource": "*", "Effect": "Allow" }] },
     Roles=[Ref(AmbariAccessRole), Ref(NodeAccessRole)],
 ))
 
-NodeInstanceProfile = t.add_resource(InstanceProfile(
+NodeInstanceProfile = t.add_resource(iam.InstanceProfile(
     "NodeInstanceProfile",
     Path="/",
     Roles=[Ref(NodeAccessRole)],
 ))
 
 
-AmbariSecurityGroup = t.add_resource(SecurityGroup(
+AmbariSecurityGroup = t.add_resource(ec2.SecurityGroup(
     "AmbariSecurityGroup",
     SecurityGroupIngress=[
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="-1", IpProtocol="icmp", CidrIp=FindInMap("SubnetConfig", "Public", "CIDR"), FromPort="-1"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="65535", IpProtocol="tcp", CidrIp=FindInMap("SubnetConfig", "Public", "CIDR"), FromPort="0"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="65535", IpProtocol="udp", CidrIp=FindInMap("SubnetConfig", "Public", "CIDR"), FromPort="0"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="22", IpProtocol="tcp", CidrIp=Ref(SSHLocation), FromPort="22"
         ),
-        SecurityGroupRule(
+        ec2.SecurityGroupRule(
             ToPort="8080", IpProtocol="tcp", CidrIp=Ref(AmbariAccessLocation), FromPort="8080"
         ),
     ],
@@ -256,13 +265,13 @@ AmbariSecurityGroup = t.add_resource(SecurityGroup(
     GroupDescription="Access for the Ambari Nodes",
 ))
 
-AttachGateway = t.add_resource(VPCGatewayAttachment(
+AttachGateway = t.add_resource(ec2.VPCGatewayAttachment(
     "AttachGateway",
     VpcId=Ref(VPC),
     InternetGatewayId=Ref(InternetGateway),
 ))
 
-EC2RolePolicies = t.add_resource(PolicyType(
+EC2RolePolicies = t.add_resource(iam.PolicyType(
     "EC2RolePolicies",
     PolicyName="EC2Access",
     PolicyDocument={ "Statement": [{ "Action": ["ec2:Describe*"], "Resource": ["*"], "Effect": "Allow" }] },
@@ -275,29 +284,29 @@ EC2RolePolicies = t.add_resource(PolicyType(
 ##   volumesize: "100"
 ##   volumetype: "gp2"
 def my_block_device_mappings_root(devicenamebase,volumesize,volumetype):
-    block_device_mappings_root = ( BlockDeviceMapping(
-        DeviceName=devicenamebase + "a1", Ebs=EBSBlockDevice(VolumeSize=volumesize, VolumeType=volumetype)
+    block_device_mappings_root = (ec2.BlockDeviceMapping(
+        DeviceName=devicenamebase + "a1", Ebs=ec2.EBSBlockDevice(VolumeSize=volumesize, VolumeType=volumetype)
     ))
     return block_device_mappings_root
-def my_block_device_mappings_ebs(count,devicenamebase,volumesize,volumetype):
+def my_block_device_mappings_ebs(diskcount,devicenamebase,volumesize,volumetype):
     block_device_mappings_ebs = []
-    block_device_mappings_ebs.append(my_block_device_mappings_root("/dev/sd","100","gp2"))
-    for i in xrange(count):
+    block_device_mappings_ebs.append(my_block_device_mappings_root("/dev/sd",ref_disk_all_root_volumesize,"gp2"))
+    for i in xrange(diskcount):
         block_device_mappings_ebs.append(
-            BlockDeviceMapping(
+            ec2.BlockDeviceMapping(
                 DeviceName = devicenamebase + chr(i+98),
-                Ebs = EBSBlockDevice(
+                Ebs = ec2.EBSBlockDevice(
                     VolumeSize = volumesize,
                     VolumeType = volumetype,
                     DeleteOnTermination = True,
         )))
     return block_device_mappings_ebs
-def my_block_device_mappings_ephemeral(count,devicenamebase):
+def my_block_device_mappings_ephemeral(diskcount,devicenamebase):
     block_device_mappings_ephemeral = []
-    block_device_mappings_ephemeral.append(my_block_device_mappings_root("/dev/sd","100","gp2"))
-    for i in xrange(count):
+    block_device_mappings_ephemeral.append(my_block_device_mappings_root("/dev/sd",ref_disk_all_root_volumesize,"gp2"))
+    for i in xrange(diskcount):
         block_device_mappings_ephemeral.append(
-            BlockDeviceMapping(
+            ec2.BlockDeviceMapping(
                 DeviceName = devicenamebase + chr(i+98),
                 VirtualName= "ephemeral" + str(i)
         ))
@@ -386,7 +395,7 @@ def my_bootstrap_script(resource,install_ambari_agent,install_ambari_server,amba
     ]
     return exports + bootstrap_script_body.splitlines(True)
 
-AmbariNode = t.add_resource(Instance(
+AmbariNode = t.add_resource(ec2.Instance(
     "AmbariNode",
     UserData=Base64(Join("", my_bootstrap_script('AmbariNode','true','true','127.0.0.1'))),
     ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
@@ -400,7 +409,7 @@ AmbariNode = t.add_resource(Instance(
     IamInstanceProfile=Ref(AmbariInstanceProfile),
     InstanceType=Ref(AmbariInstanceType),
     NetworkInterfaces=[
-    NetworkInterfaceProperty(
+    ec2.NetworkInterfaceProperty(
         DeleteOnTermination="true",
         DeviceIndex="0",
         SubnetId=Ref(PublicSubnet),
@@ -415,7 +424,7 @@ WorkerNodeLaunchConfig = t.add_resource(LaunchConfiguration(
     UserData=Base64(Join("", my_bootstrap_script('WorkerNodes','true','false',ref_ambariserver))),
     ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
     BlockDeviceMappings=If( "WorkerUseEBSBool",
-        my_block_device_mappings_ebs(9,"/dev/sd","1000","gp2"),
+        my_block_device_mappings_ebs(ref_disk_worker_ebs_diskcount,"/dev/sd",ref_disk_worker_ebs_volumesize,"gp2"),
         my_block_device_mappings_ephemeral(24,"/dev/sd")
         ),
     KeyName=Ref(KeyName),
@@ -442,18 +451,18 @@ WorkerNodes = t.add_resource(AutoScalingGroup(
 ))
 
 
-MasterNode = t.add_resource(Instance(
+MasterNode = t.add_resource(ec2.Instance(
     "MasterNode",
     UserData=Base64(Join("", my_bootstrap_script('MasterNode','true','false',ref_ambariserver))),
     ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
     BlockDeviceMappings=If( "MasterUseEBSBool",
-        my_block_device_mappings_ebs(2,"/dev/sd","500","gp2"),
+        my_block_device_mappings_ebs(ref_disk_master_ebs_diskcount,"/dev/sd",ref_disk_master_ebs_volumesize,"gp2"),
         my_block_device_mappings_ephemeral(24,"/dev/sd")),
     KeyName=Ref(KeyName),
     IamInstanceProfile=Ref(NodeInstanceProfile),
     InstanceType=Ref(MasterInstanceType),
     NetworkInterfaces=[
-        NetworkInterfaceProperty(
+        ec2.NetworkInterfaceProperty(
             DeleteOnTermination="true",
             DeviceIndex="0",
             SubnetId=Ref(PublicSubnet),
