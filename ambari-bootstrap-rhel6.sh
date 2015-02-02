@@ -23,6 +23,7 @@ java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-127.0.0.1}"
 ambari_version="${ambari_version:-1.7.0}"
 ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/${ambari_version}/ambari.repo}"
+ambari_aptsource="" # TODO
 curl="curl -sSL"
 
 command_exists() {
@@ -50,6 +51,18 @@ case "$(uname -m)" in
         exit 1
         ;;
 esac
+
+## basic platform detection
+lsb_dist=''
+if [ -z "${lsb_dist}" ] && [ -r /etc/centos-release ]; then
+    lsb_dist='centos'
+    lsb_dist_release=$(cat /etc/centos-release | sed s/.*release\ // | sed s/\ .*//)
+fi
+if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
+    lsb_dist='redhat'
+    lsb_dist_release=$(cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//)
+fi
+lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
 if command_exists ambari-agent || command_exists ambari-server; then
     echo >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.'
@@ -83,46 +96,74 @@ EOF
     echo -e '\nsh /usr/local/sbin/ambari-thp-disable.sh || /bin/true\n' >> /etc/rc.local
 }
 
-yum install -y curl ntp openssl python zlib
+case "${lsb_dist}" in
+    centos|redhat)
 
-(
-    set +o errexit
+    case "${lsb_dist_release}" in
+        6.*)
 
-    setenforce 0
-    sed -i 's/\(^[^#]*\)SELINUX=enforcing/\1SELINUX=disabled/' /etc/selinux/config
-    sed -i 's/\(^[^#]*\)SELINUX=permissive/\1SELINUX=disabled/' /etc/selinux/config
+        yum install -y curl ntp openssl python zlib
 
-    my_disable_thp
+        (
+            set +o errexit
 
-    echo 'Defaults !requiretty' > /etc/sudoers.d/888-dont-requiretty
+            setenforce 0
+            sed -i 's/\(^[^#]*\)SELINUX=enforcing/\1SELINUX=disabled/' /etc/selinux/config
+            sed -i 's/\(^[^#]*\)SELINUX=permissive/\1SELINUX=disabled/' /etc/selinux/config
 
-    chkconfig iptables off && service iptables stop
-    chkconfig ip6tables off && service ip6tables stop
-    chkconfig ntpd on && ntpd -q && service ntpd restart
-)
+            my_disable_thp
 
-if [ "${java_provider}" != 'oracle' ]; then
-    yum install -y java7-devel
-    mkdir -p /usr/java
-    ln -s /etc/alternatives/java_sdk /usr/java/default
-    JAVA_HOME='/usr/java/default'
-fi
+            echo 'Defaults !requiretty' > /etc/sudoers.d/888-dont-requiretty
 
-${curl} -o /etc/yum.repos.d/ambari.repo \
-    "${ambari_repo}"
+            chkconfig iptables off && service iptables stop
+            chkconfig ip6tables off && service ip6tables stop
+            chkconfig ntpd on && ntpd -q && service ntpd restart
+        )
 
-if [ "${install_ambari_agent}" = true ]; then
-    yum install -y ambari-agent
-    sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
-        /etc/ambari-agent/conf/ambari-agent.ini
-    ambari-agent start
-fi
-if [ "${install_ambari_server}" = true ]; then
-    yum install -y ambari-server
-    if [ "${java_provider}" = 'oracle' ]; then
-        ambari-server setup -s
-    else
-        ambari-server setup -j "${JAVA_HOME}" -s
-    fi
-    ambari-server start
-fi
+        if [ "${java_provider}" != 'oracle' ]; then
+            yum install -y java7-devel
+            mkdir -p /usr/java
+            ln -s /etc/alternatives/java_sdk /usr/java/default
+            JAVA_HOME='/usr/java/default'
+        fi
+
+        ${curl} -o /etc/yum.repos.d/ambari.repo \
+            "${ambari_repo}"
+
+        if [ "${install_ambari_agent}" = true ]; then
+            yum install -y ambari-agent
+            sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
+                /etc/ambari-agent/conf/ambari-agent.ini
+            ambari-agent start
+        fi
+        if [ "${install_ambari_server}" = true ]; then
+            yum install -y ambari-server
+            if [ "${java_provider}" = 'oracle' ]; then
+                ambari-server setup -s
+            else
+                ambari-server setup -j "${JAVA_HOME}" -s
+            fi
+            ambari-server start
+        fi
+        exit 0
+    ;;
+    esac
+;;
+esac
+
+cat >&2 <<'EOF'
+
+  Your platform is not currently supported by this script or was not
+  easily detectable.
+
+  The script currently supports:
+    Red Hat Enterprise Linux 6
+    CentOS 6
+
+  Please visit the following URL for more detailed installation
+  instructions:
+
+    https://docs.hortonworks.com/
+
+EOF
+exit 1
