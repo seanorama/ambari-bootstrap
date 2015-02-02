@@ -1,39 +1,28 @@
 from troposphere import Base64, Select, FindInMap, GetAtt, GetAZs, Join, Output
-from troposphere import Template, Parameter, Ref, Condition, Equals, And, Or, Not, If
+from troposphere import Template, Condition, Equals, And, Or, Not, If
 from troposphere import Parameter, Ref, Tags, Template
+from troposphere.autoscaling import LaunchConfiguration, AutoScalingGroup
+from troposphere.ec2 import Instance, BlockDeviceMapping, EBSBlockDevice
+from troposphere.iam import InstanceProfile, Role
+from troposphere.ec2 import PortRange, NetworkInterfaceProperty
+from troposphere.ec2 import Subnet, SubnetRouteTableAssociation
+from troposphere.ec2 import Route, RouteTable
+from troposphere.ec2 import SecurityGroup, SecurityGroupRule, InternetGateway
+from troposphere.ec2 import VPC, VPCGatewayAttachment
+from troposphere.iam import Policy, PolicyType
 from troposphere.cloudformation import Init
 from troposphere.cloudfront import Distribution, DistributionConfig
 from troposphere.cloudfront import Origin, DefaultCacheBehavior
-from troposphere.ec2 import PortRange
-from troposphere.ec2 import Subnet
-from troposphere.iam import Policy, PolicyType
-from troposphere.iam import InstanceProfile
-from troposphere.iam import Role
-from troposphere.autoscaling import LaunchConfiguration
-from troposphere.ec2 import Instance, NetworkInterfaceProperty
-from troposphere.ec2 import RouteTable
-from troposphere.ec2 import SecurityGroup
-from troposphere.ec2 import Route
-from troposphere.ec2 import BlockDeviceMapping, EBSBlockDevice
-from troposphere.autoscaling import AutoScalingGroup
-from troposphere.ec2 import SubnetRouteTableAssociation
-from troposphere.ec2 import InternetGateway
-from troposphere.ec2 import VPC
-from troposphere.ec2 import VPCGatewayAttachment
+from troposphere.policies import CreationPolicy, ResourceSignal
 
-
-def template():
-    t = Template()
-    for p in parameters.values():
-        t.add_parameter(p)
-    for k in conditions:
-        t.add_condition(k, conditions[k])
-    for r in resources.values():
-        t.add_resource(r)
-    return t
+ref_stack_id = Ref('AWS::StackId')
+ref_region = Ref('AWS::Region')
+ref_stack_name = Ref('AWS::StackName')
+ref_ambariserver = GetAtt('AmbariNode',
+                        'PrivateDnsName')
+ref_java_provider = Ref('JavaProvider')
 
 t = Template()
-print(template().to_json())
 
 t.add_version("2010-09-09")
 
@@ -56,6 +45,15 @@ WorkerInstanceCount = t.add_parameter(Parameter(
     MinValue="1",
 ))
 
+JavaProvider = t.add_parameter(Parameter(
+    "JavaProvider",
+    Default="open",
+    Type="String",
+    Description="Provider of Java packages: open or oracle",
+    AllowedValues=['open','oracle'],
+    ConstraintDescription="open or oracle",
+))
+
 WorkerInstanceType = t.add_parameter(Parameter(
     "WorkerInstanceType",
     Default="i2.4xlarge",
@@ -68,6 +66,17 @@ SSHLocation = t.add_parameter(Parameter(
     "SSHLocation",
     ConstraintDescription="Must be a valid CIDR range.",
     Description="SSH access for Ambari Node",
+    Default="0.0.0.0/0",
+    MinLength="9",
+    AllowedPattern="(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+    MaxLength="18",
+    Type="String",
+))
+
+AmbariAccessLocation = t.add_parameter(Parameter(
+    "AmbariAccessLocation",
+    ConstraintDescription="Must be a valid CIDR range.",
+    Description="IPs which can access Ambari. Must be CIDR notation.",
     Default="0.0.0.0/0",
     MinLength="9",
     AllowedPattern="(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
@@ -108,40 +117,34 @@ WorkerUseEBS = t.add_parameter(Parameter(
     AllowedValues=["yes", "no"],
 ))
 
-conditions = {
-    "MasterUseEBSBool": Equals(Ref("MasterUseEBS"),"yes"),
-    "WorkerUseEBSBool": Equals(Ref("WorkerUseEBS"),"yes"),
-}
-
-for k in conditions:
-    t.add_condition(k, conditions[k])
-
+MasterUseEBSBool = t.add_condition("MasterUseEBSBool", Equals(Ref("MasterUseEBS"),"yes"))
+WorkerUseEBSBool = t.add_condition("WorkerUseEBSBool", Equals(Ref("WorkerUseEBS"),"yes"))
 
 t.add_mapping("SubnetConfig",
-{'Public': {'CIDR': '10.0.0.0/24'}, 'VPC': {'CIDR': '10.0.0.0/16'}}
-)
-
-t.add_mapping("CENTOS6",
-{'ap-northeast-1': {'AMI': 'ami-25436924'},
- 'ap-southeast-1': {'AMI': 'ami-0aaf8858'},
- 'ap-southeast-2': {'AMI': 'ami-ef5133d5'},
- 'eu-west-1': {'AMI': 'ami-4ac6653d'},
- 'sa-east-1': {'AMI': 'ami-9b962386'},
- 'us-east-1': {'AMI': 'ami-bc8131d4'},
- 'us-west-1': {'AMI': 'ami-33c1ca76'},
- 'us-west-2': {'AMI': 'ami-a9de9c99'}}
+    {'Public': {'CIDR': '10.0.0.0/24'}, 'VPC': {'CIDR': '10.0.0.0/16'}}
 )
 
 t.add_mapping("RHEL66",
-{'ap-northeast-1': {'AMI': 'ami-a15666a0'},
- 'ap-southeast-1': {'AMI': 'ami-3813326a'},
- 'ap-southeast-2': {'AMI': 'ami-55e38e6f'},
- 'eu-west-1': {'AMI': 'ami-9cfd53eb'},
- 'sa-east-1': {'AMI': 'ami-995ce884'},
- 'us-east-1': {'AMI': 'ami-aed06ac6'},
- 'us-west-1': {'AMI': 'ami-69ccd92c'},
- 'us-west-2': {'AMI': 'ami-5fbcf36f'}}
+    {'ap-northeast-1': {'AMI': 'ami-a15666a0'},
+     'ap-southeast-1': {'AMI': 'ami-3813326a'},
+     'ap-southeast-2': {'AMI': 'ami-55e38e6f'},
+     'eu-west-1': {'AMI': 'ami-9cfd53eb'},
+     'sa-east-1': {'AMI': 'ami-995ce884'},
+     'us-east-1': {'AMI': 'ami-aed06ac6'},
+     'us-west-1': {'AMI': 'ami-69ccd92c'},
+     'us-west-2': {'AMI': 'ami-5fbcf36f'}}
 )
+
+VPC = t.add_resource(VPC(
+    "VPC",
+    EnableDnsSupport="true",
+    CidrBlock=FindInMap("SubnetConfig", "VPC", "CIDR"),
+    EnableDnsHostnames="true",
+))
+
+InternetGateway = t.add_resource(InternetGateway(
+    "InternetGateway",
+))
 
 PublicSubnet = t.add_resource(Subnet(
     "PublicSubnet",
@@ -166,6 +169,104 @@ NodeAccessRole = t.add_resource(Role(
     "NodeAccessRole",
     Path="/",
     AssumeRolePolicyDocument={ "Statement": [{ "Action": ["sts:AssumeRole"], "Effect": "Allow", "Principal": { "Service": ["ec2.amazonaws.com"] } }] },
+))
+
+
+PublicRouteTable = t.add_resource(RouteTable(
+    "PublicRouteTable",
+    VpcId=Ref(VPC),
+))
+
+DefaultSecurityGroup = t.add_resource(SecurityGroup(
+    "DefaultSecurityGroup",
+    GroupDescription="Default Security group for all the Nodes",
+    SecurityGroupIngress=[
+        SecurityGroupRule(
+            ToPort="-1", IpProtocol="icmp", CidrIp=FindInMap("SubnetConfig", "VPC", "CIDR"), FromPort="-1"
+        ),
+        SecurityGroupRule(
+            ToPort="65535", IpProtocol="tcp", CidrIp=FindInMap("SubnetConfig", "VPC", "CIDR"), FromPort="0"
+        ),
+        SecurityGroupRule(
+            ToPort="65535", IpProtocol="udp", CidrIp=FindInMap("SubnetConfig", "VPC", "CIDR"), FromPort="0"
+        ),
+        SecurityGroupRule(
+            ToPort="22", IpProtocol="tcp", CidrIp=Ref(SSHLocation), FromPort="22"
+        ),
+    ],
+    VpcId=Ref(VPC),
+))
+
+PublicRoute = t.add_resource(Route(
+    "PublicRoute",
+    GatewayId=Ref(InternetGateway),
+    DestinationCidrBlock="0.0.0.0/0",
+    RouteTableId=Ref(PublicRouteTable),
+    DependsOn="AttachGateway",
+))
+
+AmbariAccessRole = t.add_resource(Role(
+    "AmbariAccessRole",
+    Path="/",
+    AssumeRolePolicyDocument={ "Statement": [{ "Action": ["sts:AssumeRole"], "Effect": "Allow", "Principal": { "Service": ["ec2.amazonaws.com"] } }] },
+))
+
+PublicSubnetRouteTableAssociation = t.add_resource(SubnetRouteTableAssociation(
+    "PublicSubnetRouteTableAssociation",
+    SubnetId=Ref(PublicSubnet),
+    RouteTableId=Ref(PublicRouteTable),
+))
+
+
+
+S3RolePolicies = t.add_resource(PolicyType(
+    "S3RolePolicies",
+    PolicyName="s3access",
+    PolicyDocument={ "Statement": [{ "Action": "s3:*", "Resource": "*", "Effect": "Allow" }] },
+    Roles=[Ref(AmbariAccessRole), Ref(NodeAccessRole)],
+))
+
+NodeInstanceProfile = t.add_resource(InstanceProfile(
+    "NodeInstanceProfile",
+    Path="/",
+    Roles=[Ref(NodeAccessRole)],
+))
+
+
+AmbariSecurityGroup = t.add_resource(SecurityGroup(
+    "AmbariSecurityGroup",
+    SecurityGroupIngress=[
+        SecurityGroupRule(
+            ToPort="-1", IpProtocol="icmp", CidrIp=FindInMap("SubnetConfig", "Public", "CIDR"), FromPort="-1"
+        ),
+        SecurityGroupRule(
+            ToPort="65535", IpProtocol="tcp", CidrIp=FindInMap("SubnetConfig", "Public", "CIDR"), FromPort="0"
+        ),
+        SecurityGroupRule(
+            ToPort="65535", IpProtocol="udp", CidrIp=FindInMap("SubnetConfig", "Public", "CIDR"), FromPort="0"
+        ),
+        SecurityGroupRule(
+            ToPort="22", IpProtocol="tcp", CidrIp=Ref(SSHLocation), FromPort="22"
+        ),
+        SecurityGroupRule(
+            ToPort="8080", IpProtocol="tcp", CidrIp=Ref(AmbariAccessLocation), FromPort="8080"
+        ),
+    ],
+    VpcId=Ref(VPC),
+    GroupDescription="Access for the Ambari Nodes",
+))
+
+AttachGateway = t.add_resource(VPCGatewayAttachment(
+    "AttachGateway",
+    VpcId=Ref(VPC),
+    InternetGatewayId=Ref(InternetGateway),
+))
+
+EC2RolePolicies = t.add_resource(PolicyType(
+    "EC2RolePolicies",
+    PolicyName="EC2Access",
+    PolicyDocument={ "Statement": [{ "Action": ["ec2:Describe*"], "Resource": ["*"], "Effect": "Allow" }] },
+    Roles=[Ref(AmbariAccessRole)],
 ))
 
 ## Functions to generate blockdevicemappings
@@ -203,23 +304,98 @@ def my_block_device_mappings_ephemeral(count,devicenamebase):
     return block_device_mappings_ephemeral
 
 
-WorkerNodeLaunchConfig = t.add_resource(LaunchConfiguration(
-    "WorkerNodeLaunchConfig",
-    UserData=Base64(Join("", ["#!/bin/bash -ex\n", "\n", "function error_exit\n", "{\n", " /opt/aws/bin/cfn-signal -e 1 --stack ", Ref("AWS::StackName"), " --region ", Ref("AWS::Region"), " --resource WorkerNodes\n", " exit 1\n", "}\n", "\n", "## Install and Update CloudFormation\n", "rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || :\n", "yum install -y https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm\n", "yum update -y aws-cfn-bootstrap\n", "\n", "## Running setup script\n", "curl https://raw.githubusercontent.com/seanorama/hadoop-stuff/master/providers/aws/hdp-setup.sh -o /tmp/hdp-setup.sh", " || error_exit 'Failed to download setup script'\n", "chmod a+x /tmp/hdp-setup.sh\n", "/tmp/hdp-setup.sh > /tmp/hdp-setup.log 2>&1", " || error_exit 'Install failed.See hdp-setup.log for details'\n", "\n", "## Install Ambari\n", "JAVA_HOME=/etc/alternatives/java_sdk\n", "curl http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/1.7.0/ambari.repo -o /etc/yum.repos.d/ambari.repo", " || error_exit 'Ambari repo setup failed'\n", "yum install -y ambari-agent", " || error_exit 'Ambari Agent Installation failed'\n", "sed 's/^hostname=.*/hostname=", GetAtt("AmbariNode", "PrivateDnsName"), "/' -i /etc/ambari-agent/conf/ambari-agent.ini\n", "service ambari-agent start", " || error_exit 'Ambari Agent start-up failed'\n", "\n", "## If all went well, signal success\n", "/opt/aws/bin/cfn-signal -e 0 --stack ", Ref("AWS::StackName"), " --region ", Ref("AWS::Region"), " --resource WorkerNodes\n", "\n", "## Reboot Server\n", "reboot"])),
-    ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
-    BlockDeviceMappings=If( "WorkerUseEBSBool",my_block_device_mappings_ebs(9,"/dev/sd","1000","gp2"),my_block_device_mappings_ephemeral(24,"/dev/sd")),
-    KeyName=Ref(KeyName),
-    SecurityGroups=[Ref("DefaultSecurityGroup")],
-    IamInstanceProfile=Ref("NodeInstanceProfile"),
-    InstanceType=Ref(WorkerInstanceType),
-    AssociatePublicIpAddress="true",
-))
+bootstrap_script_body = """
+########################################################################
+## trap errors
+error_exit() {
+  local line_no=$1
+  local exit_code=$2
+  /opt/aws/bin/cfn-signal -e ${exit_code} --region ${region} --stack ${stack} --resource ${resource}
+  exit ${exit_code}
+}
+trap 'error_exit ${LINENO} ${?}' ERR
+
+########################################################################
+## Install and Update CloudFormation
+rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || :
+yum install -y https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm
+yum update -y aws-cfn-bootstrap
+
+########################################################################
+## AWS specific system modifications
+
+## swappiness to 0
+sysctl -w vm.swappiness=0
+mkdir -p /etc/sysctl.d
+cat > /etc/sysctl.d/50-swappiness.conf <<-'EOF'
+## disable swapping
+vm.swappiness=0
+EOF
+
+# Disable some not-required services.
+chkconfig cups off
+chkconfig postfix off
+
+## Remove existing mount points
+sed '/^\/dev\/xvd[b-z]/d' -i /etc/fstab
+
+## Format emphemeral drives and create mounts
+for drv in `ls /dev/xv* | grep -v xvda`
+do
+  umount $drv || :
+  mkdir -p ${drv//dev/data}
+  echo "$drv ${drv//dev/data} ext4 defaults,noatime,nodiratime 0 0" >> /etc/fstab
+  nohup mkfs.ext4 -m 0 -T largefile4 $drv &
+done
+wait
+
+## Re-size root partition
+yum install -y gdisk
+growpart /dev/xvda 1
+
+## Bootstrap Ambari
+yum install -y curl
+curl -sSL \
+  https://raw.githubusercontent.com/seanorama/hadoop-stuff/master/installer/ambari-bootstrap-rhel6.sh \
+  -o /root/ambari-bootstrap-rhel6.sh
+sh /root/ambari-bootstrap-rhel6.sh
+
+## Run blueprint after reboot
+## TODO: this is for a future feature.
+
+## If all went well, signal success
+/opt/aws/bin/cfn-signal -e ${?} --region ${region} --stack ${stack} --resource ${resource}
+
+## Reboot Server
+reboot
+"""
+
+def my_bootstrap_script(resource,install_ambari_agent,install_ambari_server,ambari_server):
+    exports = [
+        "#!/usr/bin/env bash\n",
+        "exec &> >(tee -a /root/cloudformation.log)\n"
+        "set -o nounset\n",
+        "set -o errexit\n",
+        "export region='", ref_region, "'\n",
+        "export stack='", ref_stack_name, "'\n",
+        "export resource='", resource ,"'\n",
+        "export ambari_server='", ambari_server ,"'\n",
+        "export java_provider=", ref_java_provider ,"\n",
+        "export install_ambari_agent=", install_ambari_agent ,"\n",
+        "export install_ambari_server=", install_ambari_server ,"\n",
+    ]
+    return exports + bootstrap_script_body.splitlines(True)
 
 AmbariNode = t.add_resource(Instance(
     "AmbariNode",
-    UserData=Base64(Join("", ["#!/usr/bin/env bash\n", "region=\"", Ref("AWS::Region"), "\"\n", "stack=\"", Ref("AWS::StackName"), "\"\n", "resource=AmbariNode\n", "\n", "error_exit() {\n", "  local line_no=$1\n", "  local exit_code=$2\n", "  /opt/aws/bin/cfn-signal -e ${exit_code}", "     --region ${region}", "     --stack ${stack}", "     --resource ${resource}\n", "  exit ${exit_code}\n", "}\n", "trap 'error_exit ${LINENO} ${?}' ERR\n", "\n", "## Install and Update CloudFormation\n", "rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || :\n", "yum install -y https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm\n", "yum update -y aws-cfn-bootstrap\n", "\n", "## Running setup script\n", "curl https://raw.githubusercontent.com/seanorama/hadoop-stuff/master/providers/aws/hdp-setup.sh -o /tmp/hdp-setup.sh", " || error_exit 'Failed to download setup script'\n", "chmod a+x /tmp/hdp-setup.sh\n", "/tmp/hdp-setup.sh > /tmp/hdp-setup.log 2>&1", " || error_exit 'Install failed.See hdp-setup.log for details'\n", "\n", "## Install Ambari\n", "JAVA_HOME=/etc/alternatives/java_sdk\n", "curl http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/1.7.0/ambari.repo -o /etc/yum.repos.d/ambari.repo", " || error_exit 'Ambari repo setup failed'\n", "yum install -y ambari-agent", " || error_exit 'Ambari Agent Installation failed'\n", "sed 's/^hostname=.*/hostname=127.0.0.1/' -i /etc/ambari-agent/conf/ambari-agent.ini\n", "service ambari-agent start", " || error_exit 'Ambari Agent start-up failed'\n", "\n", "yum install -y ambari-server", " || error_exit 'Ambari Server Installation failed'\n", "ambari-server setup -j ${JAVA_HOME} -s", " || error_exit 'Ambari Server setup failed'\n", "service ambari-server start", " || error_exit 'Ambari Server start-up failed'\n", "\n", "## If all went well, signal success\n", "/opt/aws/bin/cfn-signal -e $? ", "   --region ${region}", "   --stack ${stack}", "   --resource ${resource}\n", "\n", "## Reboot Server\n", "reboot"])),
+    UserData=Base64(Join("", my_bootstrap_script('AmbariNode','true','true','127.0.0.1'))),
     ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
     BlockDeviceMappings=[my_block_device_mappings_root("/dev/sd","100","gp2")],
+    CreationPolicy=CreationPolicy(
+        ResourceSignal=ResourceSignal(
+          Count=1,
+          Timeout="PT30M"
+    )),
     KeyName=Ref(KeyName),
     IamInstanceProfile=Ref(AmbariInstanceProfile),
     InstanceType=Ref(AmbariInstanceType),
@@ -228,36 +404,25 @@ AmbariNode = t.add_resource(Instance(
         DeleteOnTermination="true",
         DeviceIndex="0",
         SubnetId=Ref(PublicSubnet),
-        GroupSet=[Ref("AmbariSecurityGroup")],
+        GroupSet=[Ref(AmbariSecurityGroup)],
         AssociatePublicIpAddress="true",
     ),
     ],
 ))
 
-PublicRouteTable = t.add_resource(RouteTable(
-    "PublicRouteTable",
-    VpcId=Ref("VPC"),
-))
-
-DefaultSecurityGroup = t.add_resource(SecurityGroup(
-    "DefaultSecurityGroup",
-    SecurityGroupIngress=[{ "ToPort": "-1", "IpProtocol": "icmp", "CidrIp": FindInMap("SubnetConfig", "VPC", "CIDR"), "FromPort": "-1" }, { "ToPort": "65535", "IpProtocol": "tcp", "CidrIp": FindInMap("SubnetConfig", "VPC", "CIDR"), "FromPort": "0" }, { "ToPort": "65535", "IpProtocol": "udp", "CidrIp": FindInMap("SubnetConfig", "VPC", "CIDR"), "FromPort": "0" }, { "ToPort": "22", "IpProtocol": "tcp", "CidrIp": Ref(SSHLocation), "FromPort": "22" }],
-    VpcId=Ref("VPC"),
-    GroupDescription="Default Security group for all the Nodes",
-))
-
-PublicRoute = t.add_resource(Route(
-    "PublicRoute",
-    GatewayId=Ref("InternetGateway"),
-    DestinationCidrBlock="0.0.0.0/0",
-    RouteTableId=Ref(PublicRouteTable),
-    DependsOn="AttachGateway",
-))
-
-AmbariAccessRole = t.add_resource(Role(
-    "AmbariAccessRole",
-    Path="/",
-    AssumeRolePolicyDocument={ "Statement": [{ "Action": ["sts:AssumeRole"], "Effect": "Allow", "Principal": { "Service": ["ec2.amazonaws.com"] } }] },
+WorkerNodeLaunchConfig = t.add_resource(LaunchConfiguration(
+    "WorkerNodeLaunchConfig",
+    UserData=Base64(Join("", my_bootstrap_script('WorkerNodes','true','false',ref_ambariserver))),
+    ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
+    BlockDeviceMappings=If( "WorkerUseEBSBool",
+        my_block_device_mappings_ebs(9,"/dev/sd","1000","gp2"),
+        my_block_device_mappings_ephemeral(24,"/dev/sd")
+        ),
+    KeyName=Ref(KeyName),
+    SecurityGroups=[Ref("DefaultSecurityGroup")],
+    IamInstanceProfile=Ref("NodeInstanceProfile"),
+    InstanceType=Ref(WorkerInstanceType),
+    AssociatePublicIpAddress="true",
 ))
 
 WorkerNodes = t.add_resource(AutoScalingGroup(
@@ -269,41 +434,17 @@ WorkerNodes = t.add_resource(AutoScalingGroup(
     LaunchConfigurationName=Ref(WorkerNodeLaunchConfig),
     AvailabilityZones=[GetAtt(PublicSubnet, "AvailabilityZone")],
     DependsOn="AmbariNode",
+    CreationPolicy=CreationPolicy(
+        ResourceSignal=ResourceSignal(
+          Count=Ref(WorkerInstanceCount),
+          Timeout="PT30M"
+    )),
 ))
 
-PublicSubnetRouteTableAssociation = t.add_resource(SubnetRouteTableAssociation(
-    "PublicSubnetRouteTableAssociation",
-    SubnetId=Ref(PublicSubnet),
-    RouteTableId=Ref(PublicRouteTable),
-))
-
-InternetGateway = t.add_resource(InternetGateway(
-    "InternetGateway",
-))
-
-VPC = t.add_resource(VPC(
-    "VPC",
-    EnableDnsSupport="true",
-    CidrBlock=FindInMap("SubnetConfig", "VPC", "CIDR"),
-    EnableDnsHostnames="true",
-))
-
-S3RolePolicies = t.add_resource(PolicyType(
-    "S3RolePolicies",
-    PolicyName="s3access",
-    PolicyDocument={ "Statement": [{ "Action": "s3:*", "Resource": "*", "Effect": "Allow" }] },
-    Roles=[Ref(AmbariAccessRole), Ref(NodeAccessRole)],
-))
-
-NodeInstanceProfile = t.add_resource(InstanceProfile(
-    "NodeInstanceProfile",
-    Path="/",
-    Roles=[Ref(NodeAccessRole)],
-))
 
 MasterNode = t.add_resource(Instance(
     "MasterNode",
-    UserData=Base64(Join("", ["#!/bin/bash\n", "\n", "function error_exit\n", "{\n", " /opt/aws/bin/cfn-signal -e 1 --stack ", Ref("AWS::StackName"), " --region ", Ref("AWS::Region"), " --resource MasterNode\n", " exit 1\n", "}\n", "\n", "## Install and Update CloudFormation\n", "rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || :\n", "yum install -y https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm\n", "yum update -y aws-cfn-bootstrap\n", "\n", "## Running setup script\n", "curl https://raw.githubusercontent.com/seanorama/hadoop-stuff/master/providers/aws/hdp-setup.sh -o /tmp/hdp-setup.sh", " || error_exit 'Failed to download setup script'\n", "chmod a+x /tmp/hdp-setup.sh\n", "/tmp/hdp-setup.sh > /tmp/hdp-setup.log 2>&1", " || error_exit 'Install failed.See hdp-setup.log for details'\n", "\n", "## Install Ambari\n", "JAVA_HOME=/etc/alternatives/java_sdk\n", "curl http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/1.7.0/ambari.repo -o /etc/yum.repos.d/ambari.repo", " || error_exit 'Ambari repo setup failed'\n", "yum install -y ambari-agent", " || error_exit 'Ambari Agent Installation failed'\n", "sed 's/^hostname=.*/hostname=", GetAtt(AmbariNode, "PrivateDnsName"), "/' -i /etc/ambari-agent/conf/ambari-agent.ini\n", "service ambari-agent start", " || error_exit 'Ambari Agent start-up failed'\n", "\n", "## If all went well, signal success\n", "/opt/aws/bin/cfn-signal -e 0 --stack ", Ref("AWS::StackName"), " --region ", Ref("AWS::Region"), " --resource MasterNode\n", "\n", "## Reboot Server\n", "reboot"])),
+    UserData=Base64(Join("", my_bootstrap_script('MasterNode','true','false',ref_ambariserver))),
     ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
     BlockDeviceMappings=If( "MasterUseEBSBool",
         my_block_device_mappings_ebs(2,"/dev/sd","500","gp2"),
@@ -312,40 +453,37 @@ MasterNode = t.add_resource(Instance(
     IamInstanceProfile=Ref(NodeInstanceProfile),
     InstanceType=Ref(MasterInstanceType),
     NetworkInterfaces=[
-    NetworkInterfaceProperty(
-        DeleteOnTermination="true",
-        DeviceIndex="0",
-        SubnetId=Ref(PublicSubnet),
-        GroupSet=[Ref(DefaultSecurityGroup)],
-        AssociatePublicIpAddress="true",
-    ),
+        NetworkInterfaceProperty(
+            DeleteOnTermination="true",
+            DeviceIndex="0",
+            SubnetId=Ref(PublicSubnet),
+            GroupSet=[Ref(DefaultSecurityGroup)],
+            AssociatePublicIpAddress="true",
+        ),
     ],
     DependsOn="AmbariNode",
+    CreationPolicy=CreationPolicy(
+        ResourceSignal=ResourceSignal(
+          Count=1,
+          Timeout="PT30M"
+    )),
 ))
 
-AmbariSecurityGroup = t.add_resource(SecurityGroup(
-    "AmbariSecurityGroup",
-    SecurityGroupIngress=[{ "ToPort": "80", "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0", "FromPort": "80" }, { "ToPort": "8080", "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0", "FromPort": "8080" }, { "ToPort": "-1", "IpProtocol": "icmp", "CidrIp": "10.0.0.0/24", "FromPort": "-1" }, { "ToPort": "65535", "IpProtocol": "tcp", "CidrIp": "10.0.0.0/24", "FromPort": "0" }, { "ToPort": "65535", "IpProtocol": "udp", "CidrIp": "10.0.0.0/24", "FromPort": "0" }, { "ToPort": "22", "IpProtocol": "tcp", "CidrIp": Ref(SSHLocation), "FromPort": "22" }],
-    VpcId=Ref(VPC),
-    GroupDescription="Access for the Ambari Nodes",
-))
+#Subnet = t.add_output(Output(
+    #"Subnet",
+    #Value=Ref(PublicSubnet),
+#))
 
-AttachGateway = t.add_resource(VPCGatewayAttachment(
-    "AttachGateway",
-    VpcId=Ref(VPC),
-    InternetGatewayId=Ref(InternetGateway),
-))
+t.add_output([
+    Output(
+        "AmbariURL",
+        Description="Primary public IP address for Eth0",
+        Value=Join("", [
+            "http://", GetAtt('AmbariNode', 'PrivateDnsName'), ":8080"
+        ]),
+    ),
+])
 
-EC2RolePolicies = t.add_resource(PolicyType(
-    "EC2RolePolicies",
-    PolicyName="EC2Access",
-    PolicyDocument={ "Statement": [{ "Action": ["ec2:Describe*"], "Resource": ["*"], "Effect": "Allow" }] },
-    Roles=[Ref(AmbariAccessRole)],
-))
 
-Subnet = t.add_output(Output(
-    "Subnet",
-    Value=Ref(PublicSubnet),
-))
 
 print(t.to_json())
