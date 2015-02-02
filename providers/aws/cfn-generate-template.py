@@ -50,12 +50,15 @@ AmbariInstanceType = t.add_parameter(Parameter(
 
 WorkerInstanceCount = t.add_parameter(Parameter(
     "WorkerInstanceCount",
-    Default="2",
-    Type="Number",
+    Default="2", Type="Number", MaxValue="99", MinValue="1",
     Description="Number of Worker instances",
-    MaxValue="99",
-    MinValue="1",
-))
+    ))
+
+MasterInstanceCount = t.add_parameter(Parameter(
+    "MasterInstanceCount",
+    Default="2", Type="Number", MaxValue="99", MinValue="1",
+    Description="Number of Master instances",
+    ))
 
 JavaProvider = t.add_parameter(Parameter(
     "JavaProvider",
@@ -454,37 +457,62 @@ WorkerNodes = t.add_resource(AutoScalingGroup(
 ))
 
 
-MasterNode = t.add_resource(ec2.Instance(
-    "MasterNode",
-    UserData=Base64(Join("", my_bootstrap_script('MasterNode','true','false',ref_ambariserver))),
+#MasterNode = t.add_resource(ec2.Instance(
+    #"MasterNode",
+    #UserData=Base64(Join("", my_bootstrap_script('MasterNode','true','false',ref_ambariserver))),
+    #ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
+    #BlockDeviceMappings=If( "MasterUseEBSBool",
+        #my_block_device_mappings_ebs(ref_disk_master_ebs_diskcount,"/dev/sd",ref_disk_master_ebs_volumesize,"gp2"),
+        #my_block_device_mappings_ephemeral(24,"/dev/sd")),
+    #KeyName=Ref(KeyName),
+    #IamInstanceProfile=Ref(NodeInstanceProfile),
+    #InstanceType=Ref(MasterInstanceType),
+    #NetworkInterfaces=[
+        #ec2.NetworkInterfaceProperty(
+            #DeleteOnTermination="true",
+            #DeviceIndex="0",
+            #SubnetId=Ref(PublicSubnet),
+            #GroupSet=[Ref(DefaultSecurityGroup)],
+            #AssociatePublicIpAddress="true",
+        #),
+    #],
+    #DependsOn="AmbariNode",
+    #CreationPolicy=CreationPolicy(
+        #ResourceSignal=ResourceSignal(
+          #Count=1,
+          #Timeout="PT30M"
+    #)),
+#))
+
+MasterNodeLaunchConfig = t.add_resource(LaunchConfiguration(
+    "MasterNodeLaunchConfig",
+    UserData=Base64(Join("", my_bootstrap_script('MasterNodes','true','false',ref_ambariserver))),
     ImageId=FindInMap("RHEL66", Ref("AWS::Region"), "AMI"),
     BlockDeviceMappings=If( "MasterUseEBSBool",
         my_block_device_mappings_ebs(ref_disk_master_ebs_diskcount,"/dev/sd",ref_disk_master_ebs_volumesize,"gp2"),
         my_block_device_mappings_ephemeral(24,"/dev/sd")),
     KeyName=Ref(KeyName),
-    IamInstanceProfile=Ref(NodeInstanceProfile),
+    SecurityGroups=[Ref("DefaultSecurityGroup")],
+    IamInstanceProfile=Ref("NodeInstanceProfile"),
     InstanceType=Ref(MasterInstanceType),
-    NetworkInterfaces=[
-        ec2.NetworkInterfaceProperty(
-            DeleteOnTermination="true",
-            DeviceIndex="0",
-            SubnetId=Ref(PublicSubnet),
-            GroupSet=[Ref(DefaultSecurityGroup)],
-            AssociatePublicIpAddress="true",
-        ),
-    ],
+    AssociatePublicIpAddress="true",
+))
+
+MasterNodes = t.add_resource(AutoScalingGroup(
+    "MasterNodes",
+    DesiredCapacity=Ref(MasterInstanceCount),
+    MinSize=1,
+    MaxSize=Ref(MasterInstanceCount),
+    VPCZoneIdentifier=[Ref(PublicSubnet)],
+    LaunchConfigurationName=Ref(MasterNodeLaunchConfig),
+    AvailabilityZones=[GetAtt(PublicSubnet, "AvailabilityZone")],
     DependsOn="AmbariNode",
     CreationPolicy=CreationPolicy(
         ResourceSignal=ResourceSignal(
-          Count=1,
+          Count=Ref(MasterInstanceCount),
           Timeout="PT30M"
     )),
 ))
-
-#Subnet = t.add_output(Output(
-    #"Subnet",
-    #Value=Ref(PublicSubnet),
-#))
 
 t.add_output([
     Output(
@@ -497,7 +525,6 @@ t.add_output([
 ])
 
 
-#print(t.to_json())
 if __name__ == '__main__':
 
     template_compressed="\n".join([line.strip() for line in t.to_json().split("\n")])

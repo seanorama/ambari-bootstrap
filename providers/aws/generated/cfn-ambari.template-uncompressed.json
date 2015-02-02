@@ -106,6 +106,13 @@
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
+        "MasterInstanceCount": {
+            "Default": "2",
+            "Description": "Number of Master instances",
+            "MaxValue": "99",
+            "MinValue": "1",
+            "Type": "Number"
+        },
         "MasterInstanceType": {
             "ConstraintDescription": "Must be a valid EC2 instance type.",
             "Default": "c3.4xlarge",
@@ -518,15 +525,9 @@
         "InternetGateway": {
             "Type": "AWS::EC2::InternetGateway"
         },
-        "MasterNode": {
-            "CreationPolicy": {
-                "ResourceSignal": {
-                    "Count": 1,
-                    "Timeout": "PT30M"
-                }
-            },
-            "DependsOn": "AmbariNode",
+        "MasterNodeLaunchConfig": {
             "Properties": {
+                "AssociatePublicIpAddress": "true",
                 "BlockDeviceMappings": {
                     "Fn::If": [
                         "MasterUseEBSBool",
@@ -680,19 +681,9 @@
                 "KeyName": {
                     "Ref": "KeyName"
                 },
-                "NetworkInterfaces": [
+                "SecurityGroups": [
                     {
-                        "AssociatePublicIpAddress": "true",
-                        "DeleteOnTermination": "true",
-                        "DeviceIndex": "0",
-                        "GroupSet": [
-                            {
-                                "Ref": "DefaultSecurityGroup"
-                            }
-                        ],
-                        "SubnetId": {
-                            "Ref": "PublicSubnet"
-                        }
+                        "Ref": "DefaultSecurityGroup"
                     }
                 ],
                 "UserData": {
@@ -714,7 +705,7 @@
                                 },
                                 "'\n",
                                 "export resource='",
-                                "MasterNode",
+                                "MasterNodes",
                                 "'\n",
                                 "export ambari_server='",
                                 {
@@ -802,7 +793,44 @@
                     }
                 }
             },
-            "Type": "AWS::EC2::Instance"
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "MasterNodes": {
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "MasterInstanceCount"
+                    },
+                    "Timeout": "PT30M"
+                }
+            },
+            "DependsOn": "AmbariNode",
+            "Properties": {
+                "AvailabilityZones": [
+                    {
+                        "Fn::GetAtt": [
+                            "PublicSubnet",
+                            "AvailabilityZone"
+                        ]
+                    }
+                ],
+                "DesiredCapacity": {
+                    "Ref": "MasterInstanceCount"
+                },
+                "LaunchConfigurationName": {
+                    "Ref": "MasterNodeLaunchConfig"
+                },
+                "MaxSize": {
+                    "Ref": "MasterInstanceCount"
+                },
+                "MinSize": 1,
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PublicSubnet"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup"
         },
         "NodeAccessRole": {
             "Properties": {
