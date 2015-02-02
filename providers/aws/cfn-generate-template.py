@@ -517,9 +517,16 @@ MasterNodes = t.add_resource(AutoScalingGroup(
 t.add_output([
     Output(
         "AmbariURL",
-        Description="Primary public IP address for Eth0",
+        Description="URL of Ambari UI",
         Value=Join("", [
-            "http://", GetAtt('AmbariNode', 'PrivateDnsName'), ":8080"
+            "http://", GetAtt('AmbariNode', 'PublicDnsName'), ":8080"
+        ]),
+    ),
+    Output(
+        "AmbariSSH",
+        Description="SSH to the Ambari Node",
+        Value=Join("", [
+            "ssh ec2-user@", GetAtt('AmbariNode', 'PublicDnsName')
         ]),
     ),
 ])
