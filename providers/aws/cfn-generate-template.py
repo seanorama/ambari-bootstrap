@@ -368,7 +368,7 @@ growpart /dev/xvda 1
 ## Bootstrap Ambari
 yum install -y curl
 curl -sSL \
-  https://raw.githubusercontent.com/seanorama/hadoop-stuff/master/installer/ambari-bootstrap-rhel6.sh \
+  https://s3-us-west-2.amazonaws.com/ambari-bootstrap/ambari-bootstrap-rhel6.sh \
   -o /root/ambari-bootstrap-rhel6.sh
 sh /root/ambari-bootstrap-rhel6.sh
 
@@ -511,7 +511,7 @@ if __name__ == '__main__':
         sys.stderr.write("Successfully validated template!\n")
         with open('generated/cfn-ambari.template-uncompressed.json', 'w') as f:
             f.write(t.to_json())
-        print('Uncompressed template written to generated/cfn-ambari.template.json')
+        print('Uncompressed template written to generated/cfn-ambari.template-uncompressed.json')
         with open('generated/cfn-ambari.template.json', 'w') as f:
             f.write(template_compressed)
         print('Compressed template written to generated/cfn-ambari.template.json')
