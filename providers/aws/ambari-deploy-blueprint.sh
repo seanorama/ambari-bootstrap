@@ -2,15 +2,6 @@
 #
 # HDP 2.2 install using Ambari & Cloudformation
 #
-# Usage: ./install-hdp.sh
-#
-# Options:
-#   ambari_host=TheHostName cluster_name=CloudFormationStackName ./hdp-install.sh
-#
-# Defaults:
-#   ambari_host=localhost
-#   cluster_name=hdp-simple
-#
 # Requirements:
 #  - bash, aws-cli, jq, curl, sed
 #
@@ -65,7 +56,7 @@ nodes_publicnames=$(logical_id="*" query="PublicDnsName" my_aws_get_hosts)
 nodes_privatenames=$(logical_id="*" query="PrivateDnsName" my_aws_get_hosts)
 ambari_host=$(logical_id="AmbariNode" query="PublicDnsName" my_aws_get_hosts)
 ambari_node=$(logical_id="AmbariNode" query="PrivateDnsName" my_aws_get_hosts)
-master_nodes=$(logical_id="MasterNode" query="PrivateDnsName" my_aws_get_hosts)
+master_nodes=$(logical_id="MasterNodes" query="PrivateDnsName" my_aws_get_hosts)
 worker_nodes=$(logical_id="WorkerNodes" query="PrivateDnsName" my_aws_get_hosts)
 ambari_curl="curl -su admin:${ambari_password} -H X-Requested-By:ambari"
 ambari_host=${ambari_host:-"localhost"}

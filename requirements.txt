@@ -1,0 +1,4 @@
+troposphere
+boto
+fabric
+awscli

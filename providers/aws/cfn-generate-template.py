@@ -3,12 +3,15 @@
 # generates an AWS CloudFormation template for an
 #   Apache Ambari & Hortonworks Data Platform cluster
 
+import sys
+import boto
+import boto.cloudformation
+import troposphere.ec2 as ec2
+import troposphere.iam as iam
 from troposphere import Base64, Select, FindInMap, GetAtt, Join
 from troposphere import Template, Condition, Equals, And, Or, Not, If
 from troposphere import Parameter, Ref, Tags, Template, Output
 from troposphere.autoscaling import LaunchConfiguration, AutoScalingGroup
-import troposphere.ec2 as ec2
-import troposphere.iam as iam
 from troposphere.policies import CreationPolicy, ResourceSignal
 
 # things you may want to change
@@ -494,5 +497,21 @@ t.add_output([
 ])
 
 
+#print(t.to_json())
+if __name__ == '__main__':
 
-print(t.to_json())
+    template_compressed="\n".join([line.strip() for line in t.to_json().split("\n")])
+
+    try:
+        cfcon = boto.cloudformation.connect_to_region('us-west-2')
+        cfcon.validate_template(template_compressed)
+    except boto.exception.BotoServerError, e:
+        sys.stderr.write("FATAL: CloudFormation Template Validation Error:\n%s\n" % e.message)
+    else:
+        sys.stderr.write("Successfully validated template!\n")
+        with open('generated/cfn-ambari.template-uncompressed.json', 'w') as f:
+            f.write(t.to_json())
+        print('Uncompressed template written to generated/cfn-ambari.template.json')
+        with open('generated/cfn-ambari.template.json', 'w') as f:
+            f.write(template_compressed)
+        print('Compressed template written to generated/cfn-ambari.template.json')
