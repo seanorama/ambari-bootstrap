@@ -4,8 +4,14 @@ set -o nounset
 
 # This script provides an easy install of Ambari
 # for RedHat Enterpise Linux 6 & CentOS 6
+#
+# source at http://github.com/seanorama/ambari-bootstrap
+#
+# Download and run as root or with sudo. Or alternatively:
+#   curl -sSL https://s3-us-west-2.amazonaws.com/ambari-bootstrap/ambari-bootstrap-rhel6.sh | sudo -E sh
+#
 
-# defaults: override by setting in the environment
+# defaults can be overriden by setting variables in the environment:
 #   For example:
 #       export java_provider=oracle
 #       export install_ambari_server=true
