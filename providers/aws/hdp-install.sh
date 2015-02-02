@@ -20,36 +20,47 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# populate hostnames into variables
-my_aws_get_hosts() {
-    aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" \
-        "Name=tag:aws:cloudformation:logical-id,Values=${logical_id}" \
-        "Name=tag:aws:cloudformation:stack-name,Values=${cluster_name}" \
-        --query "Reservations[].Instances[].[${query}]" --output text
-}
-
-# install requirements on redhat-6 images
-my_aws_prep() {
-if [[ "$(python -mplatform)" == *"redhat-6"* ]]; then
-  hash aws 2>/dev/null || \
-      curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip";\
-      unzip awscli-bundle.zip;\
-      sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-  hash jq 2>/dev/null || sudo yum install -y jq
+if [ -z ${instance_id+x} ] && [ -z ${region}+x ]; then
+    if curl -sSL -m 5 http://169.254.169.254/latest/meta-data -o /dev/null ; then
+        on_aws=true
+    else
+        echo "You must set an instance_id & region within the cloudformation stack"
+        exit 1
+    fi
+else
+    echo "Proceeding with instance_id: ${instance_id} and region: ${region}"
 fi
 
-## verify we have the needed commands
+if [ "${on_aws}" = true ]; then
+    if [[ "$(python -mplatform)" == *"redhat-6"* ]]; then
+      hash aws 2>/dev/null || \
+          curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip";\
+          unzip awscli-bundle.zip;\
+          sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+      hash jq 2>/dev/null || sudo yum install -y jq
+    fi
+
+    instance_id=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/instance-id)
+    region=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[^0-9]*$//')
+fi
+
 hash aws 2>/dev/null || { echo >&2 "I require awscli but it's not installed.  Aborting."; exit 1; }
 hash jq 2>/dev/null || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
 hash curl 2>/dev/null || { echo >&2 "I require curl but it's not installed.  Aborting."; exit 1; }
 
-# configure aws: should add a check to see if already configured
-aws configure
+stack_id=$(aws --region ${region} cloudformation describe-stack-resources --physical-resource-id ${instance_id} | jq -r '.StackResources[0].StackId')
+stack_name=$(aws --region ${region} cloudformation describe-stack-resources --physical-resource-id ${instance_id} | jq -r '.StackResources[0].StackName')
+cluster_name=${stack_name}
+ambari_password=${ambari_password:-"admin"}
+
+my_aws_get_hosts() {
+    aws --region ${region} ec2 describe-instances --filters "Name=instance-state-name,Values=running" \
+        "Name=tag:aws:cloudformation:logical-id,Values=${logical_id}" \
+        "Name=tag:aws:cloudformation:stack-name,Values=${stack_name}" \
+        "Name=tag:aws:cloudformation:stack-id,Values=${stack_id}" \
+        --query "Reservations[].Instances[].[${query}]" --output text
 }
 
-my_aws_prep
-ambari_password=${ambari_password:-"admin"}
-cluster_name=${cluster_name:-"hdp-simple"}
 nodes_publicnames=$(logical_id="*" query="PublicDnsName" my_aws_get_hosts)
 nodes_privatenames=$(logical_id="*" query="PrivateDnsName" my_aws_get_hosts)
 ambari_host=$(logical_id="AmbariNode" query="PublicDnsName" my_aws_get_hosts)
@@ -77,7 +88,7 @@ cat > ambari.blueprint <<-'EOF'
     }
   ],
   "host_groups" : [
-    { "name" : "management",
+    { "name" : "ambari",
       "components" : [
         { "name" : "GANGLIA_MONITOR" },
         { "name" : "HCAT" },
@@ -144,7 +155,7 @@ cat > cluster.blueprint << 'EOF'
   "default_password" : "admin",
   "host_groups" : [
     {
-      "name" : "management",
+      "name" : "ambari",
       "hosts" : [
 EOF
 
