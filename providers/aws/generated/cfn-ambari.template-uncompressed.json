@@ -107,7 +107,7 @@
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
         "MasterInstanceCount": {
-            "Default": "2",
+            "Default": "1",
             "Description": "Number of Master instances",
             "MaxValue": "99",
             "MinValue": "1",

@@ -56,7 +56,7 @@ WorkerInstanceCount = t.add_parameter(Parameter(
 
 MasterInstanceCount = t.add_parameter(Parameter(
     "MasterInstanceCount",
-    Default="2", Type="Number", MaxValue="99", MinValue="1",
+    Default="1", Type="Number", MaxValue="99", MinValue="1",
     Description="Number of Master instances",
     ))
 
