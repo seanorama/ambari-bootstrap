@@ -56,8 +56,25 @@
         }
     },
     "Outputs": {
+        "AmbariSSH": {
+            "Description": "SSH to the Ambari Node",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "ssh ec2-user@",
+                        {
+                            "Fn::GetAtt": [
+                                "AmbariNode",
+                                "PublicDnsName"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        },
         "AmbariURL": {
-            "Description": "Primary public IP address for Eth0",
+            "Description": "URL of Ambari UI",
             "Value": {
                 "Fn::Join": [
                     "",
@@ -66,7 +83,7 @@
                         {
                             "Fn::GetAtt": [
                                 "AmbariNode",
-                                "PrivateDnsName"
+                                "PublicDnsName"
                             ]
                         },
                         ":8080"
