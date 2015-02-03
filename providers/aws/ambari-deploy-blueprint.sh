@@ -11,12 +11,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ -z ${instance_id+x} ] && [ -z ${region}+x ]; then
+command_exists() {
+    command -v "$@" > /dev/null 2>&1
+}
+
+if [ -z ${instance_id:-} ] && [ -z ${region:-} ]; then
     if curl -sSL -m 5 http://169.254.169.254/latest/meta-data -o /dev/null ; then
         on_aws=true
     else
         echo "You must set an instance_id & region within the cloudformation stack"
-        exit 1
+    #    exit 1
     fi
 else
     echo "Proceeding with instance_id: ${instance_id} and region: ${region}"
@@ -24,20 +28,25 @@ fi
 
 if [ "${on_aws}" = true ]; then
     if [[ "$(python -mplatform)" == *"redhat-6"* ]]; then
-      hash aws 2>/dev/null || \
+      command_exists curl 2>/dev/null || yum install -y curl
+      command_exists aws 2>/dev/null || \
           curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip";\
           unzip awscli-bundle.zip;\
           sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-      hash jq 2>/dev/null || sudo yum install -y jq
+      command_exists jq 2>/dev/null || \
+          curl -sSL -O http://stedolan.github.io/jq/download/linux64/jq;\
+          chmod +x jq;
+          alias jq=~/jq
     fi
-
     instance_id=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/instance-id)
     region=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[^0-9]*$//')
+else
+    command_exists aws 2>/dev/null || { echo >&2 "I require awscli but it's not installed.  Aborting."; exit 1; }
+    command_exists jq 2>/dev/null || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
+    command_exists curl 2>/dev/null || { echo >&2 "I require curl but it's not installed.  Aborting."; exit 1; }
 fi
 
-hash aws 2>/dev/null || { echo >&2 "I require awscli but it's not installed.  Aborting."; exit 1; }
-hash jq 2>/dev/null || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
-hash curl 2>/dev/null || { echo >&2 "I require curl but it's not installed.  Aborting."; exit 1; }
+
 
 stack_id=$(aws --region ${region} cloudformation describe-stack-resources --physical-resource-id ${instance_id} | jq -r '.StackResources[0].StackId')
 stack_name=$(aws --region ${region} cloudformation describe-stack-resources --physical-resource-id ${instance_id} | jq -r '.StackResources[0].StackName')
@@ -185,11 +194,12 @@ cat >> cluster.blueprint << 'EOF'
 }
 EOF
 
-## Create the blueprint & the clsuter
+## Create the blueprint & the cluster
 create_blueprint=$($ambari_curl $ambari_api/blueprints/simple -d @ambari.blueprint)
 echo $create_blueprint
 create_cluster=$($ambari_curl $ambari_api/clusters/${cluster_name} -d @cluster.blueprint)
 echo $create_cluster
 
-echo "Check the cluster creation status with:"
-echo "  $ambari_curl $(echo $create_cluster | jq '.href' | tr -d \") | jq '.Requests'"
+$ambari_curl $(echo $create_cluster | jq '.href' | tr -d \") | jq '.Requests'
+
+echo "View this page to see the progress: $(echo $create_cluster | jq '.href' | tr -d \")"
