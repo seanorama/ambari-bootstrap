@@ -529,6 +529,16 @@ t.add_output([
             "ssh ec2-user@", GetAtt('AmbariNode', 'PublicDnsName')
         ]),
     ),
+    Output(
+        "AmbariServiceInstanceId",
+        Description="The Ambari Servers Instance-Id",
+        Value=Ref('AmbariNode')
+    ),
+    Output(
+        "Region",
+        Description="AWS Region",
+        Value=ref_region
+    ),
 ])
 
 
