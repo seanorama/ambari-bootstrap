@@ -18,6 +18,8 @@ command_exists() {
 if [ -z ${instance_id:-} ] && [ -z ${region:-} ]; then
     if curl -sSL -m 5 http://169.254.169.254/latest/meta-data -o /dev/null ; then
         on_aws=true
+        instance_id=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/instance-id)
+        region=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[^0-9]*$//')
     else
         echo "You must set an instance_id & region within the cloudformation stack"
     #    exit 1
@@ -38,15 +40,11 @@ if [ "${on_aws}" = true ]; then
           chmod +x jq;
           alias jq=~/jq
     fi
-    instance_id=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/instance-id)
-    region=$(curl -sSL -m 10 http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[^0-9]*$//')
 else
     command_exists aws 2>/dev/null || { echo >&2 "I require awscli but it's not installed.  Aborting."; exit 1; }
     command_exists jq 2>/dev/null || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
     command_exists curl 2>/dev/null || { echo >&2 "I require curl but it's not installed.  Aborting."; exit 1; }
 fi
-
-
 
 stack_id=$(aws --region ${region} cloudformation describe-stack-resources --physical-resource-id ${instance_id} | jq -r '.StackResources[0].StackId')
 stack_name=$(aws --region ${region} cloudformation describe-stack-resources --physical-resource-id ${instance_id} | jq -r '.StackResources[0].StackName')
@@ -68,7 +66,6 @@ ambari_node=$(logical_id="AmbariNode" query="PrivateDnsName" my_aws_get_hosts)
 master_nodes=$(logical_id="MasterNodes" query="PrivateDnsName" my_aws_get_hosts)
 worker_nodes=$(logical_id="WorkerNodes" query="PrivateDnsName" my_aws_get_hosts)
 ambari_curl="curl -su admin:${ambari_password} -H X-Requested-By:ambari"
-ambari_host=${ambari_host:-"localhost"}
 ambari_api="http://${ambari_host}:8080/api/v1"
 
 echo creating blueprint at ./ambari.blueprint

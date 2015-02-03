@@ -73,6 +73,12 @@
                 ]
             }
         },
+        "AmbariServiceInstanceId": {
+            "Description": "The Ambari Servers Instance-Id",
+            "Value": {
+                "Ref": "AmbariNode"
+            }
+        },
         "AmbariURL": {
             "Description": "URL of Ambari UI",
             "Value": {
@@ -89,6 +95,12 @@
                         ":8080"
                     ]
                 ]
+            }
+        },
+        "Region": {
+            "Description": "AWS Region",
+            "Value": {
+                "Ref": "AWS::Region"
             }
         }
     },
