@@ -102,7 +102,7 @@ case "${lsb_dist}" in
     case "${lsb_dist_release}" in
         6.*)
 
-        yum install -y curl ntp openssl python zlib
+        yum install -y curl ntp openssl python zlib wget unzip
 
         (
             set +o errexit
