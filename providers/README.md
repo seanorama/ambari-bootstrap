@@ -26,6 +26,7 @@ The current template will:
 How
 ---
 
+
 - The template files were generated with
   [troposphere](https://github.com/cloudtools/troposphere).
 - It's currently one big python file, but I plan to split into separate files to
