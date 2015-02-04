@@ -11,4 +11,5 @@ def upload_s3():
     local("aws s3 sync --delete . s3://ambari-bootstrap/providers/aws/ \
             --exclude '.DS_Store' \
             --exclude '.git*' --exclude '*' \
-            --include 'generated/*.json'")
+            --include 'generated/*.json' \
+            --include 'ambari-deploy-blueprint.sh'")
