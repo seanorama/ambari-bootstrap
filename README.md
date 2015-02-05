@@ -28,7 +28,7 @@ Requires:
 
 - Simplest usage:
   - Fetch and then execute: `sudo sh ./ambari-bootstrap.sh`
-  - Or, if you trust me: `curl -sSL https://s3-us-west-2.amazonaws.com/ambari-bootstrap/ambari-bootstrap-rhel6.sh | sudo -E sh`
+  - Or, if you trust me: `curl -sSL https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh | sudo -E sh`
 
 - With options _(this example isntalls the agent, server, Oracle Java, and registers to an Ambari Server)_
 
