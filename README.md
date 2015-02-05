@@ -58,7 +58,8 @@ By default the script runs with these parameters:
                               ##   Only tested with 1.7.0
   ambari_repo=...             ## The ambari.repo file to use for yum. See file for default
                               ##   and change at your own risk.
-                              
+  ```
+
 ### Contacts
 
 - Sean Roberts
