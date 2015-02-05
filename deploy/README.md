@@ -11,7 +11,6 @@ Automated some of the processes involved with deploying a cluster.
 Contacts
 --------
 
-Sean Roberts
-
+* Sean Roberts
   - @seanorama
   - http://twitter.com/seano
