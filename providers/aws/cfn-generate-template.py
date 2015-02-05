@@ -371,9 +371,9 @@ growpart /dev/xvda 1
 ## Bootstrap Ambari
 yum install -y curl
 curl -sSL \
-  https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap-rhel6.sh \
+  https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh \
   -o /root/ambari-bootstrap.sh
-sh /root/ambari-bootstrap-rhel6.sh
+sh /root/ambari-bootstrap.sh
 
 ## Run blueprint after reboot
 ## TODO: this is for a future feature.
