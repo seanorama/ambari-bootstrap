@@ -16,7 +16,7 @@ Usage
   - or `curl -ssLO https://github.com/seanorama/ambari-bootstrap/archive/master.zip; unzip master.zip; cd ambari-bootstrap-master/deploy`
 
 - Deploy Hortonworks Data Platform from Ambari Recommendations (no blueprint required):
-  - bash ./deploy-recommended-cluster.py
+  - bash ./deploy-recommended-cluster.bash
 
 Configuration
 -------------
