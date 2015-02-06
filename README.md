@@ -5,9 +5,9 @@ Collection of tools for bootstrapping Apache Ambari & deploying clusters
 
 There are several tools:
 
-  - 'ambari-bootstrap.sh' in this directory _(detail below)_
-  - './deploy/' tools for deploying clusters after Ambari is installed on all hosts
-  - './providers/' tools for various infrastructure/Cloud providers
+  - [ambari-bootstrap.sh](#ambari-bootstrapsh) - script which installs & configures Ambari along with it's pre-requisites. 
+  - ./deploy/ - tools to quickly deploy clusters using Ambari
+  - ./providers/ - tools for various infrastructure/Cloud providers
 
 ambari-bootstrap.sh
 -------------------
@@ -26,11 +26,11 @@ Requires:
 
 ### Usage
 
-- Simplest usage:
+- Quick start _(ambari-agent only)_:
   - Fetch and then execute: `sudo sh ./ambari-bootstrap.sh`
   - Or, if you trust me: `curl -sSL https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh | sudo -E sh`
 
-- With options _(this example isntalls the agent, server, Oracle Java, and registers to an Ambari Server)_
+- With options _(showing install of Ambari agent, server, Oracle Java, and registering to an Ambari Server such that SSH keys aren't required)_
 
   ```
   export install_ambari_agent=true
@@ -39,9 +39,6 @@ Requires:
   export ambari_server=myserver.domain.local
   sudo sh ./ambari-bootstrap.sh
   ```
-
-### Advanced usage
-
 
 ### Configuration
 
@@ -62,6 +59,8 @@ By default the script runs with these parameters:
 
 ### Contacts
 
+- http://github.com/seanorama/ambari-bootstrap/issues
+
 - Sean Roberts
-  - @seanorama
+  - http://github.com/seanorama
   - http://twitter.com/seano
