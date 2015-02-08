@@ -1,6 +1,7 @@
 #!/bin/sh -
 set -o errexit
 set -o nounset
+set -o pipefail
 
 # This script provides an easy install of Ambari
 # for RedHat Enterpise Linux 6 & CentOS 6
@@ -20,7 +21,7 @@ set -o nounset
 install_ambari_agent="${install_ambari_agent:-true}"
 install_ambari_server="${install_ambari_server:-false}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
-ambari_server="${ambari_server:-127.0.0.1}"
+ambari_server="${ambari_server:-localhost}"
 ambari_version="${ambari_version:-1.7.0}"
 ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/${ambari_version}/ambari.repo}"
 ambari_aptsource="" # TODO
@@ -31,14 +32,14 @@ command_exists() {
 }
 
 if [ ! "$(hostname -f)" ]; then
-    echo >&2 'Error: "hostname -f" failed to report an FQDN.'
-    echo >&2 'The system must report a FQDN in order to use Ambari'
+    printf >&2 'Error: "hostname -f" failed to report an FQDN.\n'
+    printf >&2 'The system must report a FQDN in order to use Ambari\n'
     exit 1
 fi
 
 if [ "$(id -ru)" != 0 ]; then
-    echo >&2 'Error: this installer needs the ability to run commands as root.'
-    echo >&2 'Install as root or with sudo'
+    printf >&2 'Error: this installer needs the ability to run commands as root.\n'
+    printf >&2 'Install as root or with sudo\n'
     exit 1
 fi
 
@@ -46,8 +47,8 @@ case "$(uname -m)" in
     *64)
         ;;
     *)
-        echo >&2 'Error: you are not using a 64bit platform.'
-        echo >&2 'This installer requires a 64bit platforms.'
+        printf >&2 'Error: you are not using a 64bit platform.\n'
+        printf >&2 'This installer requires a 64bit platforms.\n'
         exit 1
         ;;
 esac
@@ -65,9 +66,9 @@ fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
 if command_exists ambari-agent || command_exists ambari-server; then
-    echo >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.'
-    echo >&2 'Please ensure that you do not already have ambari-agent installed.'
-    echo >&2 'You may press Ctrl+C now to abort this process and rectify this situation.'
+    printf >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.\n'
+    printf >&2 'Please ensure that you do not already have ambari-agent installed.\n'
+    printf >&2 'You may press Ctrl+C now to abort this process and rectify this situation.\n'
     ( set -x; sleep 20 )
 fi
 
@@ -93,7 +94,20 @@ EOF
     )
     chmod +x /usr/local/sbin/ambari-thp-disable.sh
     sh /usr/local/sbin/ambari-thp-disable.sh
-    echo -e '\nsh /usr/local/sbin/ambari-thp-disable.sh || /bin/true\n' >> /etc/rc.local
+    printf '\nsh /usr/local/sbin/ambari-thp-disable.sh || /bin/true\n\n' >> /etc/rc.local
+}
+
+my_disable_ipv6() {
+    mkdir -p /etc/sysctl.d
+    ( cat > /etc/sysctl.d/99-hadoop-ipv6.conf <<-'EOF'
+## Disabled ipv6
+## Provided by Ambari Bootstrap
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+EOF
+    )
+    sysctl -e -p /etc/sysctl.d/99-hadoop-ipv6.conf
 }
 
 case "${lsb_dist}" in
@@ -102,41 +116,60 @@ case "${lsb_dist}" in
     case "${lsb_dist_release}" in
         6.*)
 
+        printf "## Info: Installing base packages\n"
+        yum repolist ## we want the script to fail if yum isn't working
+        yum clean all
         yum install -y curl ntp openssl python zlib wget unzip openssh-clients
 
         (
             set +o errexit
 
+            printf "## Info: Fixing sudo to not requiretty. This is the default in newer distributions\n"
+            printf 'Defaults !requiretty\n' > /etc/sudoers.d/888-dont-requiretty
+
             setenforce 0
             sed -i 's/\(^[^#]*\)SELINUX=enforcing/\1SELINUX=disabled/' /etc/selinux/config
             sed -i 's/\(^[^#]*\)SELINUX=permissive/\1SELINUX=disabled/' /etc/selinux/config
 
+            printf "## Info: Disabling Transparent Huge Pages\n"
             my_disable_thp
 
-            echo 'Defaults !requiretty' > /etc/sudoers.d/888-dont-requiretty
+            printf "## Info: Disabling IPv6\n"
+            my_disable_ipv6
 
-            chkconfig iptables off && service iptables stop
-            chkconfig ip6tables off && service ip6tables stop
-            chkconfig ntpd on && ntpd -q && service ntpd restart
+            printf "## Info: Disabling iptables\n"
+            chkconfig iptables off || true
+            service iptables stop || true
+            chkconfig ip6tables off || true
+            service ip6tables stop || true
+
+            printf "## Syncing time via ntpd\n"
+            chkconfig ntpd on || true
+            ntpd -q || true
+            service ntpd restart || true
         )
 
         if [ "${java_provider}" != 'oracle' ]; then
+            printf "## installing java\n"
             yum install -y java7-devel
             mkdir -p /usr/java
             ln -s /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
         fi
 
+        printf "## fetch ambari repo\n"
         ${curl} -o /etc/yum.repos.d/ambari.repo \
             "${ambari_repo}"
 
         if [ "${install_ambari_agent}" = true ]; then
+            printf "## installing ambari-agent\n"
             yum install -y ambari-agent
             sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
                 /etc/ambari-agent/conf/ambari-agent.ini
             ambari-agent start
         fi
         if [ "${install_ambari_server}" = true ]; then
+            printf "## install ambari-server\n"
             yum install -y ambari-server
             if [ "${java_provider}" = 'oracle' ]; then
                 ambari-server setup -s
@@ -145,6 +178,7 @@ case "${lsb_dist}" in
             fi
             ambari-server start
         fi
+        printf "## Success! All done.\n"
         exit 0
     ;;
     esac
@@ -167,3 +201,4 @@ cat >&2 <<'EOF'
 
 EOF
 exit 1
+
