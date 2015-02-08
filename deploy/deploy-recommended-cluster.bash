@@ -40,7 +40,7 @@ command_exists curl 2>/dev/null || { echo >&2 "I require curl but it's not insta
 
 if ! python -c 'import argparse' && [[ -x $(which yum) ]]; then
     printf "FAIL: I require 'python-argparse'. On yum based systems, install with:\n"
-    printf "yum install -y python-argparse\n"
+    yum install -y python-argparse
 fi
 
 
