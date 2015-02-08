@@ -139,10 +139,9 @@ python ${__dir}/create_blueprint.py \
 
 ## upload the generated blueprint & create the cluster
 ${ambari_curl} ${ambari_api}/blueprints/${ambari_blueprint_name} -d @${tmp_dir}/blueprint.json
-#create_cluster=$(${ambari_curl} ${ambari_api}/clusters/${cluster_name} -d @${tmp_dir}/cluster.json)
+${ambari_curl} ${ambari_api}/clusters/${cluster_name} -d @${tmp_dir}/cluster.json
 
 ## print the status
-#status_url=$(echo ${create_cluster} | json_get_value href | tr -d \')
 status_url=${ambari_api}/clusters/${cluster_name}/requests/1
 ${ambari_curl} ${status_url} | json_get_value Requests
 printf "\n\nCluster build status at: ${status_url}"
