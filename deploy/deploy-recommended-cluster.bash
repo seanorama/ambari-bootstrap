@@ -15,12 +15,14 @@ ambari_stack_name="${ambari_stack_name:-HDP}"
 ambari_stack_version="${ambari_stack_version:-2.2}"
 ambari_server=${ambari_server:-localhost}
 ambari_password=${ambari_password:-admin}
+ambari_protocol=${ambari_protocol:-http}
+ambari_port=${ambari_port:-8080}
 cluster_name=${cluster_name:-hdp}
 ambari_blueprint_name="${ambari_blueprint_name:-recommended}"
 
 ## for curl requests
-ambari_curl="curl -su admin:${ambari_password} -H x-requested-by:ambari"
-ambari_api="http://${ambari_server}:8080/api/v1"
+ambari_curl="curl -ksSu admin:${ambari_password} -H x-requested-by:ambari"
+ambari_api="${ambari_protocol}://${ambari_server}:${ambari_port}/api/v1"
 
 ## magic
 __dir=$( cd "$(dirname "$0")" ; pwd )
@@ -144,7 +146,7 @@ ${ambari_curl} ${ambari_api}/clusters/${cluster_name} -d @${tmp_dir}/cluster.jso
 ## print the status
 status_url=${ambari_api}/clusters/${cluster_name}/requests/1
 ${ambari_curl} ${status_url} | json_get_value Requests
-printf "\n\nCluster build status at: ${status_url}"
+printf "\n\nCluster build status at: ${status_url}\n\n"
 
 exit 0
 
