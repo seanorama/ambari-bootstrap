@@ -355,14 +355,14 @@ chkconfig postfix off
 sed '/^\/dev\/xvd[b-z]/d' -i /etc/fstab
 
 ## Format emphemeral drives and create mounts
-for drv in `ls /dev/xv* | grep -v xvda`
-do
-  umount $drv || :
-  mkdir -p ${drv//dev/data}
-  echo "$drv ${drv//dev/data} ext4 defaults,noatime,nodiratime 0 0" >> /etc/fstab
+for drv in /dev/xvd[b-z]; do
+  umount ${drv} || true
+  mkdir -p /mnt${drv}
+  echo "${drv} /mnt${drv} ext4 defaults,noatime,nodiratime 0 0" >> /etc/fstab
   nohup mkfs.ext4 -m 0 -T largefile4 $drv &
 done
 wait
+
 
 ## Re-size root partition
 yum install -y gdisk

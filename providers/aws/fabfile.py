@@ -23,13 +23,13 @@ def stack_create():
             ParameterKey=MasterInstanceCount,ParameterValue=1 \
             ParameterKey=WorkerInstanceCount,ParameterValue=1 \
             ParameterKey=MasterInstanceType,ParameterValue=\"m3.large\" \
-            ParameterKey=WorkerInstanceType,ParameterValue=\"m3.large\"")
+            ParameterKey=WorkerInstanceType,ParameterValue=\"m3.xlarge\"")
 
 def stack_jumpstart_create():
     local("with-aws.sh aws cloudformation create-stack --stack-name hdp-test  \
         --template-body file://./generated/cfn-ambari-jumpstart.template.json \
         --capabilities CAPABILITY_IAM \
-        --parameters  ParameterKey=InstanceType,ParameterValue=\"m3.large\" \
+        --parameters  ParameterKey=InstanceType,ParameterValue=\"m3.xlarge\" \
             ParameterKey=KeyName,ParameterValue=\"mb\" \
             ParameterKey=WorkerInstanceCount,ParameterValue=2")
 
