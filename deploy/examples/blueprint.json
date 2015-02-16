@@ -1,0 +1,428 @@
+{
+  "Blueprints": {
+    "stack_name": "HDP",
+    "stack_version": "2.2"
+  },
+  "host_groups": [
+    {
+      "name": "host-group-7",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "HDFS_CLIENT"
+        },
+        {
+          "name": "HIVE_CLIENT"
+        },
+        {
+          "name": "SLIDER"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "NAMENODE"
+        },
+        {
+          "name": "HBASE_CLIENT"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "OOZIE_CLIENT"
+        },
+        {
+          "name": "KAFKA_BROKER"
+        },
+        {
+          "name": "PIG"
+        },
+        {
+          "name": "HCAT"
+        },
+        {
+          "name": "YARN_CLIENT"
+        },
+        {
+          "name": "SQOOP"
+        },
+        {
+          "name": "GANGLIA_SERVER"
+        },
+        {
+          "name": "NIMBUS"
+        },
+        {
+          "name": "DRPC_SERVER"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "MAPREDUCE2_CLIENT"
+        },
+        {
+          "name": "STORM_UI_SERVER"
+        },
+        {
+          "name": "ZOOKEEPER_CLIENT"
+        },
+        {
+          "name": "ZOOKEEPER_SERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "TEZ_CLIENT"
+        },
+        {
+          "name": "FALCON_CLIENT"
+        },
+        {
+          "name": "NAGIOS_SERVER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-5",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-2",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-10",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-3",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-8",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-9",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "APP_TIMELINE_SERVER"
+        },
+        {
+          "name": "RESOURCEMANAGER"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "HISTORYSERVER"
+        },
+        {
+          "name": "ZOOKEEPER_SERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "SECONDARY_NAMENODE"
+        }
+      ]
+    },
+    {
+      "name": "host-group-6",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-1",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        }
+      ]
+    },
+    {
+      "name": "host-group-4",
+      "components": [
+        {
+          "name": "NODEMANAGER"
+        },
+        {
+          "name": "HIVE_METASTORE"
+        },
+        {
+          "name": "WEBHCAT_SERVER"
+        },
+        {
+          "name": "GANGLIA_MONITOR"
+        },
+        {
+          "name": "DATANODE"
+        },
+        {
+          "name": "FLUME_HANDLER"
+        },
+        {
+          "name": "FALCON_SERVER"
+        },
+        {
+          "name": "SUPERVISOR"
+        },
+        {
+          "name": "OOZIE_SERVER"
+        },
+        {
+          "name": "HIVE_SERVER"
+        },
+        {
+          "name": "HBASE_MASTER"
+        },
+        {
+          "name": "HBASE_REGIONSERVER"
+        },
+        {
+          "name": "ZOOKEEPER_SERVER"
+        },
+        {
+          "name": "JOURNALNODE"
+        },
+        {
+          "name": "MYSQL_SERVER"
+        }
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "mapred-site": {
+        "mapreduce.map.memory.mb": "682",
+        "mapreduce.reduce.memory.mb": "682",
+        "yarn.app.mapreduce.am.command-opts": "-Xmx546m -Dhdp.version=${hdp.version}",
+        "mapreduce.reduce.java.opts": "-Xmx546m",
+        "mapreduce.task.io.sort.mb": "273",
+        "mapreduce.map.java.opts": "-Xmx546m",
+        "yarn.app.mapreduce.am.resource.mb": "682"
+      }
+    },
+    {
+      "oozie-site": {
+        "oozie.services.ext": "org.apache.oozie.service.JMSAccessorService,org.apache.oozie.service.PartitionDependencyManagerService,org.apache.oozie.service.HCatAccessorService"
+      }
+    },
+    {
+      "tez-site": {
+        "tez.am.java.opts": "-server -Xmx546m -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -XX:+UseParallelGC",
+        "tez.runtime.io.sort.mb": "272",
+        "tez.am.resource.memory.mb": "1364",
+        "tez.runtime.unordered.output.buffer.size-mb": "51",
+        "tez.task.resource.memory.mb": "682"
+      }
+    },
+    {
+      "nagios-env": {
+        "nagios_contact": "root@localhost"
+      }
+    },
+    {
+      "core-site": {
+        "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+      }
+    },
+    {
+      "hdfs-site": {
+        "dfs.datanode.max.transfer.threads": "16384"
+      }
+    },
+    {
+      "yarn-site": {
+        "yarn.scheduler.minimum-allocation-mb": "682",
+        "yarn.scheduler.maximum-allocation-mb": "2048",
+        "yarn.nodemanager.resource.cpu-vcores": "1",
+        "yarn.nodemanager.resource.memory-mb": "2048"
+      }
+    },
+    {
+      "hive-site": {
+        "hive.tez.container.size": "682",
+        "hive.tez.java.opts": "-server -Xmx546m -Djava.net.preferIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+UseParallelGC -XX:+PrintGCDetails -verbose:gc -XX:+PrintGCTimeStamps",
+        "javax.jdo.option.ConnectionPassword": "admin",
+        "hive.auto.convert.join.noconditionaltask.size": "238026752"
+      }
+    }
+  ]
+}
