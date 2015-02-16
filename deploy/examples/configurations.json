@@ -1,0 +1,100 @@
+{
+  "resources" : [
+    {
+      "href" : "http://localhost:8080/api/v1/stacks/HDP/versions/2.2/recommendations/2",
+      "hosts" : [
+        "ip-10-0-0-34.us-west-2.compute.internal",
+        "ip-10-0-0-30.us-west-2.compute.internal",
+        "ip-10-0-0-29.us-west-2.compute.internal",
+        "ip-10-0-0-35.us-west-2.compute.internal",
+        "ip-10-0-0-36.us-west-2.compute.internal",
+        "ip-10-0-0-32.us-west-2.compute.internal",
+        "ip-10-0-0-28.us-west-2.compute.internal",
+        "ip-10-0-0-33.us-west-2.compute.internal",
+        "ip-10-0-0-37.us-west-2.compute.internal",
+        "ip-10-0-0-31.us-west-2.compute.internal"
+      ],
+      "services" : [
+        "KAFKA",
+        "PIG",
+        "MAPREDUCE2",
+        "YARN",
+        "FALCON",
+        "SLIDER",
+        "HIVE",
+        "TEZ",
+        "ZOOKEEPER",
+        "STORM",
+        "SQOOP",
+        "HBASE",
+        "GANGLIA",
+        "OOZIE",
+        "FLUME",
+        "HDFS",
+        "NAGIOS"
+      ],
+      "Recommendation" : {
+        "id" : 2
+      },
+      "Versions" : {
+        "stack_name" : "HDP",
+        "stack_version" : "2.2"
+      },
+      "recommendations" : {
+        "blueprint" : {
+          "host_groups" : [ ],
+          "configurations" : {
+            "hdfs-site" : {
+              "properties" : {
+                "dfs.datanode.max.transfer.threads" : "16384"
+              }
+            },
+            "hive-site" : {
+              "properties" : {
+                "hive.auto.convert.join.noconditionaltask.size" : "238026752",
+                "hive.tez.container.size" : "682",
+                "hive.tez.java.opts" : "-server -Xmx546m -Djava.net.preferIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+UseParallelGC -XX:+PrintGCDetails -verbose:gc -XX:+PrintGCTimeStamps"
+              }
+            },
+            "mapred-site" : {
+              "properties" : {
+                "mapreduce.map.java.opts" : "-Xmx546m",
+                "mapreduce.map.memory.mb" : "682",
+                "mapreduce.reduce.java.opts" : "-Xmx546m",
+                "mapreduce.reduce.memory.mb" : "682",
+                "mapreduce.task.io.sort.mb" : "273",
+                "yarn.app.mapreduce.am.command-opts" : "-Xmx546m -Dhdp.version=${hdp.version}",
+                "yarn.app.mapreduce.am.resource.mb" : "682"
+              }
+            },
+            "oozie-site" : {
+              "properties" : {
+                "oozie.services.ext" : "org.apache.oozie.service.JMSAccessorService,org.apache.oozie.service.PartitionDependencyManagerService,org.apache.oozie.service.HCatAccessorService"
+              }
+            },
+            "tez-site" : {
+              "properties" : {
+                "tez.am.java.opts" : "-server -Xmx546m -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -XX:+UseParallelGC",
+                "tez.am.resource.memory.mb" : "1364",
+                "tez.runtime.io.sort.mb" : "272",
+                "tez.runtime.unordered.output.buffer.size-mb" : "51",
+                "tez.task.resource.memory.mb" : "682"
+              }
+            },
+            "yarn-site" : {
+              "properties" : {
+                "yarn.nodemanager.resource.cpu-vcores" : "1",
+                "yarn.nodemanager.resource.memory-mb" : "2048",
+                "yarn.scheduler.maximum-allocation-mb" : "2048",
+                "yarn.scheduler.minimum-allocation-mb" : "682"
+              }
+            }
+          }
+        },
+        "blueprint_cluster_binding" : {
+          "host_groups" : [ ]
+        }
+      }
+    }
+  ]
+}
