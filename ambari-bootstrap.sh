@@ -117,8 +117,6 @@ case "${lsb_dist}" in
         6.*)
 
         printf "## Info: Installing base packages\n"
-        yum repolist ## we want the script to fail if yum isn't working
-        yum clean all
         yum install -y curl ntp openssl python zlib wget unzip openssh-clients
 
         (
@@ -144,8 +142,8 @@ case "${lsb_dist}" in
             service ip6tables stop || true
 
             printf "## Syncing time via ntpd\n"
+            ntp -qg || true
             chkconfig ntpd on || true
-            ntpd -q || true
             service ntpd restart || true
         )
 

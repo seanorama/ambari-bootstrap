@@ -57,6 +57,26 @@ By default the script runs with these parameters:
                               ##   and change at your own risk.
   ```
 
+### Questions
+
+#### I need to run this against a large number of hosts
+
+There are a few options:
+
+  a. If the servers are deployed through automation (such as with CloudProviders), you can include it in that orchestration. See ./providers/aws/ for an example.
+  b. Pass the script to the servers a distributed ssh tool, such as pdsh. You could do this directly with SSH but ‘pdsh’ is more efficient.
+
+    ```
+    bootstrap_url=https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh
+    ambari_server=p-workshop-ops01.cloud.hortonworks.com  ## this is the internal hostname of the ambari_server. Likely different than the host you will SSH too.
+
+    ## install the ambari-server
+    pdsh -w user@p-workshop-ops01.cloud.hortonworks.com "curl -sSL ${bootstrap_url} | install_ambari_server=true sh"
+
+    ## install to all other nodes. See ‘man pdsh’ for the various ways you can specify hosts.
+    pdsh -w p-workshop-ops0[2-4].cloud.hortonworks.com "curl -sSL ${bootstrap_url} | ambari_server=${ambari_server} sh"
+    ```
+
 ### Contacts
 
 - http://github.com/seanorama/ambari-bootstrap/issues
