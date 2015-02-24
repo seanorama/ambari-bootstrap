@@ -16,6 +16,17 @@ Usage
 - Deploy Hortonworks Data Platform _(no blueprint required)_:
   - `bash ./deploy-recommended-cluster.bash`
 
+- Deploy HDP with minimal services:
+
+  ```
+  export ambari_services=(HDFS MAPREDUCE2 YARN ZOOKEEPER)
+  bash ./deploy-recommended-cluster.bash
+  ```
+  
+  - The default services are: `FALCON FLUME GANGLIA HBASE HDFS HIVE KAFKA KERBEROS MAPREDUCE2
+    NAGIOS OOZIE PIG SLIDER SQOOP STORM TEZ YARN ZOOKEEPER`
+  - 'ambari_services' and other configuration overrides can be seen in in './deploy-recommended-cluster.bash'
+
 What?
 -----
 
