@@ -116,24 +116,24 @@ case "${lsb_dist}" in
     case "${lsb_dist_release}" in
         6.*)
 
-        printf "## Info: Installing base packages\n"
-        yum install -y curl ntp openssl python zlib wget unzip openssh-clients
-
         (
             set +o errexit
+
+            printf "## Info: Disabling IPv6\n"
+            my_disable_ipv6
+
+            printf "## Info: Installing base packages\n"
+            yum install -y curl ntp openssl python zlib wget unzip openssh-clients
 
             printf "## Info: Fixing sudo to not requiretty. This is the default in newer distributions\n"
             printf 'Defaults !requiretty\n' > /etc/sudoers.d/888-dont-requiretty
 
-            setenforce 0
+            setenforce 0 || true
             sed -i 's/\(^[^#]*\)SELINUX=enforcing/\1SELINUX=disabled/' /etc/selinux/config
             sed -i 's/\(^[^#]*\)SELINUX=permissive/\1SELINUX=disabled/' /etc/selinux/config
 
             printf "## Info: Disabling Transparent Huge Pages\n"
             my_disable_thp
-
-            printf "## Info: Disabling IPv6\n"
-            my_disable_ipv6
 
             printf "## Info: Disabling iptables\n"
             chkconfig iptables off || true
