@@ -9,8 +9,8 @@ set -o pipefail
 
 ## allowed overrides for these
 host_count=${host_count:-ask} ## options: the count of hosts, 'ask', 'skip'
-ambari_services=(${ambari_services[*]:-FALCON FLUME GANGLIA HBASE HDFS HIVE KAFKA KERBEROS MAPREDUCE2
-    NAGIOS OOZIE PIG SLIDER SQOOP STORM TEZ YARN ZOOKEEPER})
+ambari_services=${ambari_services:-FALCON FLUME GANGLIA HBASE HDFS HIVE KAFKA MAPREDUCE2
+    NAGIOS OOZIE PIG SLIDER SQOOP STORM TEZ YARN ZOOKEEPER}
 ambari_stack_name="${ambari_stack_name:-HDP}"
 ambari_stack_version="${ambari_stack_version:-2.2}"
 ambari_server=${ambari_server:-localhost}
@@ -114,7 +114,7 @@ if [ "${host_count}" != "skip" ]; then
 fi
 
 # proceeding with building the cluster
-ambari_services_json="[ $(for service in ${ambari_services[*]}; do echo \"${service}\" ; done | paste -sd,) ]"
+ambari_services_json="[ \"$(sed 's/ /\",\"/g' <<< ${ambari_services})\" ]"
 ambari_hosts_json="[ $(for host in ${hosts_regd[*]}; do echo \"${host}\" ; done | paste -sd,) ]"
 
 ## get recommendations
