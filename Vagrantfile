@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-NUM_BOXES = 2
+NUM_BOXES = 3
 IP_OFFSET = 10
 
 def ip_from_num(i)
@@ -26,12 +26,13 @@ Vagrant.configure(2) do |config|
       #config.vm.box = "hashicorp/precise64"
       #config.vm.box = "ubuntu/precise64"
       #config.vm.box = "puppetlabs/ubuntu-12.04-64-nocm"
-      config.vm.box = "centos6.5"
+      #config.vm.box = "centos6.5"
       #config.vm.box = "chef/centos-6.5"
       #config.vm.box = "puppetlabs/centos-6.5-64-nocm"
 
-      v2.vm.hostname = "v#{1}.localdomain"
+      v2.vm.hostname = "v#{i}.localdomain"
       v2.vm.network "private_network", ip: ip_from_num(i)
+      #v2.vm.network "private_network", type: :dhcp
 
       v2.vm.provider :virtualbox do |v, override|
         #override.ssh.private_key_path = "~/.ssh/id_rsa"
