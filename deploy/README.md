@@ -19,7 +19,7 @@ Usage
 - Deploy HDP with minimal services:
 
   ```
-  export ambari_services=(HDFS MAPREDUCE2 YARN ZOOKEEPER)
+  export ambari_services="HDFS MAPREDUCE2 YARN ZOOKEEPER"
   bash ./deploy-recommended-cluster.bash
   ```
   
