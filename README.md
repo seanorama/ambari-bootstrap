@@ -34,7 +34,7 @@ Requires:
 
   ```
   export install_ambari_agent=true
-  export install_ambari_agent=true
+  export install_ambari_server=true
   export java_provider=oracle
   export ambari_server=myserver.domain.local
   sudo sh ./ambari-bootstrap.sh
