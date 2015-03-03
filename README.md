@@ -83,6 +83,4 @@ There are a few options:
 
 - Sean Roberts
   - http://github.com/seanorama
-  - 
-  
   - http://twitter.com/seano
