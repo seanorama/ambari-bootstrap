@@ -20,6 +20,7 @@ set -o pipefail
 
 install_ambari_agent="${install_ambari_agent:-true}"
 install_ambari_server="${install_ambari_server:-false}"
+iptables_disable="${iptables_disable:-false}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-localhost}"
 ambari_version="${ambari_version:-1.7.0}"
@@ -135,11 +136,13 @@ case "${lsb_dist}" in
             printf "## Info: Disabling Transparent Huge Pages\n"
             my_disable_thp
 
-            printf "## Info: Disabling iptables\n"
-            chkconfig iptables off || true
-            service iptables stop || true
-            chkconfig ip6tables off || true
-            service ip6tables stop || true
+            if [ "${iptables_disable}" = true ]; then
+                printf "## Info: Disabling iptables\n"
+                chkconfig iptables off || true
+                service iptables stop || true
+                chkconfig ip6tables off || true
+                service ip6tables stop || true
+            fi
 
             printf "## Syncing time via ntpd\n"
             ntp -qg || true
