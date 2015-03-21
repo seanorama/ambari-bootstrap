@@ -6,6 +6,12 @@ Purpose
 
 Deploy a cluster with Ambari using Ambari Recommendations. **No blueprint required!**
 
+Requirements
+----
+
+- python-argparse. On RedHat/CentOS: `yum install python-argparse`
+- bash
+
 Usage
 -----
 
