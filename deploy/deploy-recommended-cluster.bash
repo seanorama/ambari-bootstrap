@@ -19,6 +19,7 @@ ambari_protocol=${ambari_protocol:-http}
 ambari_port=${ambari_port:-8080}
 cluster_name=${cluster_name:-hdp}
 ambari_blueprint_name="${ambari_blueprint_name:-recommended}"
+deploy=${deploy:-true}
 
 ## for curl requests
 ambari_curl="curl -ksSu admin:${ambari_password} -H x-requested-by:ambari"
@@ -42,7 +43,8 @@ command_exists curl 2>/dev/null || { echo >&2 "I require curl but it's not insta
 
 if ! python -c 'import argparse' && [[ -x $(which yum) ]]; then
     printf "FAIL: I require 'python-argparse'. On yum based systems, install with:\n"
-    yum install -y python-argparse
+    printf "yum install -y python-argparse\n"
+    exit 1
 fi
 
 
@@ -139,14 +141,16 @@ python ${__dir}/create_blueprint.py \
     --blueprint_name ${ambari_blueprint_name} \
     --custom_configuration ${__dir}/configuration-custom.json
 
-## upload the generated blueprint & create the cluster
-${ambari_curl} ${ambari_api}/blueprints/${ambari_blueprint_name} -d @${tmp_dir}/blueprint.json
-${ambari_curl} ${ambari_api}/clusters/${cluster_name} -d @${tmp_dir}/cluster.json
+if [ "${deploy}" = true ]; then
+    ## upload the generated blueprint & create the cluster
+    ${ambari_curl} ${ambari_api}/blueprints/${ambari_blueprint_name} -d @${tmp_dir}/blueprint.json
+    ${ambari_curl} ${ambari_api}/clusters/${cluster_name} -d @${tmp_dir}/cluster.json
 
-## print the status
-status_url=${ambari_api}/clusters/${cluster_name}/requests/1
-${ambari_curl} ${status_url} | json_get_value Requests
-printf "\n\nCluster build status at: ${status_url}\n\n"
+    ## print the status
+    status_url=${ambari_api}/clusters/${cluster_name}/requests/1
+    ${ambari_curl} ${status_url} | json_get_value Requests
+    printf "\n\nCluster build status at: ${status_url}\n\n"
+fi
 
 exit 0
 
