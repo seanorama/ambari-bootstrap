@@ -9,9 +9,8 @@ set -o pipefail
 # source at http://github.com/seanorama/ambari-bootstrap
 #
 # Download and run as root or with sudo. Or alternatively:
-#   curl -sSL https://s3-us-west-2.amazonaws.com/ambari-bootstrap/ambari-bootstrap-rhel6.sh | sudo -E sh
+#   curl -sSL https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh | sudo -E sh
 #
-
 # defaults can be overriden by setting variables in the environment:
 #   For example:
 #       export java_provider=oracle
@@ -20,7 +19,7 @@ set -o pipefail
 
 install_ambari_agent="${install_ambari_agent:-true}"
 install_ambari_server="${install_ambari_server:-false}"
-iptables_disable="${iptables_disable:-false}"
+iptables_disable="${iptables_disable:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-localhost}"
 ambari_version="${ambari_version:-1.7.0}"
