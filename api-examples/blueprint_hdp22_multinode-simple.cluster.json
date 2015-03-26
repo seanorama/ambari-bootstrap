@@ -1,0 +1,19 @@
+{
+  "blueprint": "myblueprint",
+  "default_password": "replacethiswithacomplexpass",
+  "configurations": [
+      { "hive-site": { "properties": { "javax.jdo.option.ConnectionPassword": "replacethiswithacomplexpass" } }
+    }
+  ],
+  "host_groups": [
+    { "name": "master",
+      "hosts": [ { "fqdn": "p-seanwksp01.cloud.hortonworks.com" } ]
+    },
+    { "name": "workers",
+      "hosts": [
+        { "fqdn": "p-seanwksp02.cloud.hortonworks.com" },
+        { "fqdn": "p-seanwksp03.cloud.hortonworks.com" }
+      ]
+    }
+  ]
+}

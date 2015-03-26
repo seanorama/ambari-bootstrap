@@ -1,0 +1,13 @@
+{
+  "blueprint": "myblueprint",
+  "default_password": "replacethiswithacomplexpass",
+  "configurations": [
+      { "hive-site": { "properties": { "javax.jdo.option.ConnectionPassword": "replacethiswithacomplexpass" } }
+    }
+  ],
+  "host_groups": [
+    { "name": "host-group-1",
+      "hosts": [ { "fqdn": "yourhostnamehere" } ]
+    }
+  ]
+}

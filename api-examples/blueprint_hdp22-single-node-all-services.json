@@ -1,0 +1,56 @@
+{
+  "Blueprints": {
+    "stack_name": "HDP",
+    "stack_version": "2.2"
+  },
+  "host_groups": [
+    {
+      "name": "host-group-1",
+      "components": [
+        { "name": "APP_TIMELINE_SERVER" },
+        { "name": "DATANODE" },
+        { "name": "DRPC_SERVER" },
+        { "name": "FALCON_CLIENT" },
+        { "name": "FALCON_SERVER" },
+        { "name": "FLUME_HANDLER" },
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "GANGLIA_SERVER" },
+        { "name": "HBASE_CLIENT" },
+        { "name": "HBASE_MASTER" },
+        { "name": "HBASE_REGIONSERVER" },
+        { "name": "HCAT" },
+        { "name": "HDFS_CLIENT" },
+        { "name": "HISTORYSERVER" },
+        { "name": "HIVE_CLIENT" },
+        { "name": "HIVE_METASTORE" },
+        { "name": "HIVE_SERVER" },
+        { "name": "JOURNALNODE" },
+        { "name": "KAFKA_BROKER" },
+        { "name": "MAPREDUCE2_CLIENT" },
+        { "name": "MYSQL_SERVER" },
+        { "name": "NAGIOS_SERVER" },
+        { "name": "NAMENODE" },
+        { "name": "NIMBUS" },
+        { "name": "NODEMANAGER" },
+        { "name": "OOZIE_CLIENT" },
+        { "name": "OOZIE_SERVER" },
+        { "name": "PIG" },
+        { "name": "RESOURCEMANAGER" },
+        { "name": "SECONDARY_NAMENODE" },
+        { "name": "SLIDER" },
+        { "name": "SQOOP" },
+        { "name": "STORM_UI_SERVER" },
+        { "name": "SUPERVISOR" },
+        { "name": "TEZ_CLIENT" },
+        { "name": "WEBHCAT_SERVER" },
+        { "name": "YARN_CLIENT" },
+        { "name": "ZOOKEEPER_CLIENT" },
+        { "name": "ZOOKEEPER_SERVER" }
+      ]
+    }
+  ],
+  "configurations": [
+    { "nagios-env": { "nagios_contact": "root@localhost" } },
+    { "hive-site": { "javax.jdo.option.ConnectionPassword": "admin" } }
+  ]
+}
