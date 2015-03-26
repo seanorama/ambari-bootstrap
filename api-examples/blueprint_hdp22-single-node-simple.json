@@ -1,0 +1,38 @@
+{
+  "Blueprints": {
+    "stack_name": "HDP",
+    "stack_version": "2.2"
+  },
+  "host_groups": [
+    {
+      "name": "host-group-1",
+      "components": [
+        { "name": "APP_TIMELINE_SERVER" },
+        { "name": "DATANODE" },
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "GANGLIA_SERVER" },
+        { "name": "HDFS_CLIENT" },
+        { "name": "HISTORYSERVER" },
+        { "name": "HIVE_CLIENT" },
+        { "name": "HIVE_METASTORE" },
+        { "name": "HIVE_SERVER" },
+        { "name": "JOURNALNODE" },
+        { "name": "MAPREDUCE2_CLIENT" },
+        { "name": "MYSQL_SERVER" },
+        { "name": "NAGIOS_SERVER" },
+        { "name": "NAMENODE" },
+        { "name": "NODEMANAGER" },
+        { "name": "RESOURCEMANAGER" },
+        { "name": "SECONDARY_NAMENODE" },
+        { "name": "TEZ_CLIENT" },
+        { "name": "WEBHCAT_SERVER" },
+        { "name": "YARN_CLIENT" },
+        { "name": "ZOOKEEPER_CLIENT" },
+        { "name": "ZOOKEEPER_SERVER" }
+      ]
+    }
+  ],
+  "configurations": [
+    { "nagios-env": { "nagios_contact": "root@localhost" } }
+  ]
+}
