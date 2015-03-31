@@ -2,12 +2,6 @@
   "configurations" : {
       "core-site": {
         "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
-      },
-      "hive-site" : {
-        "javax.jdo.option.ConnectionPassword" : "admin"
-      },
-      "nagios-env" : {
-        "nagios_contact" : "root@localhost"
       }
   }
 }
