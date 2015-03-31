@@ -1,0 +1,38 @@
+{
+  "blueprint": "recommended", 
+  "default_password": "admin", 
+  "host_groups": [
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-shared03.cloud.hortonworks.com"
+        }
+      ], 
+      "name": "host-group-4"
+    }, 
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-shared01.cloud.hortonworks.com"
+        }
+      ], 
+      "name": "host-group-3"
+    }, 
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-shared04.cloud.hortonworks.com"
+        }
+      ], 
+      "name": "host-group-2"
+    }, 
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-shared02.cloud.hortonworks.com"
+        }
+      ], 
+      "name": "host-group-1"
+    }
+  ]
+}

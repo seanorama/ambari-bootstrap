@@ -1,5 +1,0 @@
-    {
-      "recommend" : "configurations",
-      "services" : [ "FALCON","FLUME","GANGLIA","HBASE","HDFS","HIVE","KAFKA","KERBEROS","MAPREDUCE2","NAGIOS","OOZIE","PIG","SLIDER","SQOOP","STORM","TEZ","YARN","ZOOKEEPER" ],
-      "hosts" : [ "ip-10-0-0-28.us-west-2.compute.internal","ip-10-0-0-29.us-west-2.compute.internal","ip-10-0-0-30.us-west-2.compute.internal","ip-10-0-0-31.us-west-2.compute.internal","ip-10-0-0-32.us-west-2.compute.internal","ip-10-0-0-33.us-west-2.compute.internal","ip-10-0-0-34.us-west-2.compute.internal","ip-10-0-0-35.us-west-2.compute.internal","ip-10-0-0-36.us-west-2.compute.internal","ip-10-0-0-37.us-west-2.compute.internal" ]
-    }
