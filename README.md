@@ -46,7 +46,7 @@ By default the script runs with these parameters:
 
   ```
   install_ambari_agent=true   ## Install the ambari-agent package.
-  install_ambari_agent=false  ## Install the ambari-server package.
+  install_ambari_server=false ## Install the ambari-server package.
   java_provider=open          ## Which Java provider to use ('open' or 'oracle').
   ambari_server=localhost     ## Hostname of the Ambari Server.
                               ##   Allowing agents to register themselves with the
@@ -66,16 +66,36 @@ There are a few options:
   a. If the servers are deployed through automation (such as with CloudProviders), you can include it in that orchestration. See ./providers/aws/ for an example.
   b. Pass the script to the servers a distributed ssh tool, such as pdsh. You could do this directly with SSH but ‘pdsh’ is more efficient.
 
-    ```
-    bootstrap_url=https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh
-    ambari_server=p-workshop-ops01.cloud.hortonworks.com  ## this is the internal hostname of the ambari_server. Likely different than the host you will SSH too.
+  ```
+  bootstrap_url=https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh
+  ambari_server=p-workshop-ops01.cloud.hortonworks.com  ## this is the internal hostname of the ambari_server. Likely different than the host you will SSH too.
 
-    ## install the ambari-server
-    pdsh -w user@p-workshop-ops01.cloud.hortonworks.com "curl -sSL ${bootstrap_url} | install_ambari_server=true sh"
+  ## install the ambari-server
+  pdsh -w user@p-workshop-ops01.cloud.hortonworks.com "curl -sSL ${bootstrap_url} | install_ambari_server=true sh"
 
-    ## install to all other nodes. See ‘man pdsh’ for the various ways you can specify hosts.
-    pdsh -w p-workshop-ops0[2-4].cloud.hortonworks.com "curl -sSL ${bootstrap_url} | ambari_server=${ambari_server} sh"
-    ```
+  ## install to all other nodes. See ‘man pdsh’ for the various ways you can specify hosts.
+  pdsh -w p-workshop-ops0[2-4].cloud.hortonworks.com "curl -sSL ${bootstrap_url} | ambari_server=${ambari_server} sh"
+  ```
+
+#### I want to deploy & then deploy HDP using blueprints
+
+After deploying the server & agents, you can quickly deploy HDP using Ambari Blueprints. See more in [./api-examples/](./api-examples/).
+
+Alternatively, use the script from [./deploy/](./deploy/) to generate an Ambari Blueprint and deploy the cluster.
+
+For example, this will deploy to a single node & then deploy with all HDP services which are supported by Ambari Blueprints.
+
+  ```
+  yum -y install git python-argparse
+  git clone https://github.com/seanorama/ambari-bootstrap
+  cd ambari-bootstrap
+  export install_ambari_server=true
+  sudo sh ./ambari-bootstrap.sh
+  cd deploy
+  bash ./deploy-recommended-cluster.bash
+  ```
+
+If deploying to multiple nodes, install to all of the agent machines 1st, as described earlier, and then run the above on the server.
 
 ### Contacts
 
