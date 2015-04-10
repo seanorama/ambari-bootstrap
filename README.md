@@ -77,7 +77,7 @@ There are a few options:
   pdsh -w p-workshop-ops0[2-4].cloud.hortonworks.com "curl -sSL ${bootstrap_url} | ambari_server=${ambari_server} sh"
   ```
 
-#### I want to deploy & then deploy HDP using blueprints
+#### I want to install Ambari & then deploy HDP using blueprints
 
 After deploying the server & agents, you can quickly deploy HDP using Ambari Blueprints. See more in [./api-examples/](./api-examples/).
 
