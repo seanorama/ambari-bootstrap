@@ -22,9 +22,8 @@ install_ambari_server="${install_ambari_server:-false}"
 iptables_disable="${iptables_disable:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-localhost}"
-ambari_version="${ambari_version:-1.7.0}"
-ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/${ambari_version}/ambari.repo}"
-ambari_aptsource="" # TODO
+ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.0.0/ambari.repo}"
+#ambari_aptsource="" # TODO
 curl="curl -sSL"
 
 command_exists() {
