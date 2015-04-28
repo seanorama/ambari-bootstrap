@@ -3,69 +3,20 @@
     "stack_name": "HDP",
     "stack_version": "2.2"
   },
-  "configurations": [
-    {
-      "core-site": {
-        "properties" : {
-          "fs.defaultFS" : "hdfs://mycluster",
-          "ha.zookeeper.quorum" : "%HOSTGROUP::master_1%:2181,%HOSTGROUP::master_2%:2181,%HOSTGROUP::master_3%:2181"
-      }}
-    },
-    {
-      "hdfs-site": {
-        "properties" : {
-          "dfs.client.failover.proxy.provider.mycluster" : "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider",
-          "dfs.ha.automatic-failover.enabled" : "true",
-          "dfs.ha.fencing.methods" : "shell(/bin/true)",
-          "dfs.ha.namenodes.mycluster" : "nn1,nn2",
-          "dfs.namenode.http-address" : "%HOSTGROUP::master_1%:50070",
-          "dfs.namenode.http-address.mycluster.nn1" : "%HOSTGROUP::master_1%:50070",
-          "dfs.namenode.http-address.mycluster.nn2" : "%HOSTGROUP::master_3%:50070",
-          "dfs.namenode.https-address" : "%HOSTGROUP::master_1%:50470",
-          "dfs.namenode.https-address.mycluster.nn1" : "%HOSTGROUP::master_1%:50470",
-          "dfs.namenode.https-address.mycluster.nn2" : "%HOSTGROUP::master_3%:50470",
-          "dfs.namenode.rpc-address.mycluster.nn1" : "%HOSTGROUP::master_1%:8020",
-          "dfs.namenode.rpc-address.mycluster.nn2" : "%HOSTGROUP::master_3%:8020",
-          "dfs.namenode.shared.edits.dir" : "qjournal://%HOSTGROUP::master_1%:8485;%HOSTGROUP::master_2%:8485;%HOSTGROUP::master_3%:8485/mycluster",
-          "dfs.nameservices" : "mycluster"
-      }}
-    },
-    {
-      "yarn-site" : {
-        "properties" : {
-          "yarn.resourcemanager.address" : "%HOSTGROUP::master_2%:8050",
-          "yarn.resourcemanager.address.rm1" : "%HOSTGROUP::master_2%:8050",
-          "yarn.resourcemanager.address.rm2" : "%HOSTGROUP::master_3%:8050",
-          "yarn.resourcemanager.admin.address" : "%HOSTGROUP::master_2%:8141",
-          "yarn.resourcemanager.admin.address.rm1" : "%HOSTGROUP::master_2%:8141",
-          "yarn.resourcemanager.admin.address.rm2" : "%HOSTGROUP::master_3%:8141",
-          "yarn.resourcemanager.resource-tracker.address" : "%HOSTGROUP::master_2%:8025",
-          "yarn.resourcemanager.resource-tracker.address.rm1" : "%HOSTGROUP::master_2%:8025",
-          "yarn.resourcemanager.resource-tracker.address.rm2" : "%HOSTGROUP::master_3%:8025",
-          "yarn.resourcemanager.scheduler.address" : "%HOSTGROUP::master_2%:8030",
-          "yarn.resourcemanager.scheduler.address.rm1" : "%HOSTGROUP::master_2%:8030",
-          "yarn.resourcemanager.scheduler.address.rm2" : "%HOSTGROUP::master_3%:8030",
-          "yarn.resourcemanager.cluster-id" : "yarn-cluster",
-          "yarn.resourcemanager.ha.automatic-failover.enabled" : "true",
-          "yarn.resourcemanager.ha.enabled" : "true",
-          "yarn.resourcemanager.ha.rm-ids" : "rm1,rm2",
-          "yarn.resourcemanager.hostname" : "%HOSTGROUP::master_2%",
-          "yarn.resourcemanager.hostname.rm1" : "%HOSTGROUP::master_2%",
-          "yarn.resourcemanager.hostname.rm2" : "%HOSTGROUP::master_3%",
-          "yarn.resourcemanager.recovery.enabled" : "true",
-          "yarn.resourcemanager.store.class" : "org.apache.hadoop.yarn.server. resourcemanager.recovery.ZKRMStateStore",
-          "yarn.resourcemanager.webapp.address" : "%HOSTGROUP::master_2%:8088",
-          "yarn.resourcemanager.webapp.address.rm1" : "%HOSTGROUP::master_2%:8088",
-          "yarn.resourcemanager.webapp.address.rm2" : "%HOSTGROUP::master_3%:8088",
-          "yarn.resourcemanager.webapp.https.address" : "%HOSTGROUP::master_2%:8090",
-          "yarn.resourcemanager.webapp.https.address.rm1" : "%HOSTGROUP::master_2%:8090",
-          "yarn.resourcemanager.webapp.https.address.rm2" : "%HOSTGROUP::master_3%:8090",
-          "yarn.resourcemanager.zk-address" : "%HOSTGROUP::master_1%:2181,%HOSTGROUP::master_2%:2181,%HOSTGROUP::master_3%:2181"
-                      "ha.zookeeper.quorum" : "%HOSTGROUP::master_1%:2181,%HOSTGROUP::master_2%:2181,%HOSTGROUP::master_3%:2181"
-      }}
-    }
-  ],
   "host_groups": [
+    {
+      "name": "gateway",
+      "cardinality" : "1",
+      "components": [
+        { "name": "HDFS_CLIENT" },
+        { "name": "MAPREDUCE2_CLIENT" },
+        { "name": "METRICS_COLLECTOR" },
+        { "name": "METRICS_MONITOR" },
+        { "name": "TEZ_CLIENT" },
+        { "name": "YARN_CLIENT" },
+        { "name": "ZOOKEEPER_CLIENT" }
+      ]
+    },
     {
       "name": "master_1",
       "cardinality" : "1",
@@ -96,22 +47,8 @@
         { "name": "JOURNALNODE" },
         { "name": "METRICS_MONITOR" },
         { "name": "NAMENODE" },
-        { "name": "RESOURCEMANAGER" },
         { "name": "ZKFC" },
         { "name": "ZOOKEEPER_SERVER" }
-      ]
-    },
-    {
-      "name": "gateway",
-      "cardinality" : "1",
-      "components": [
-        { "name": "HDFS_CLIENT" },
-        { "name": "MAPREDUCE2_CLIENT" },
-        { "name": "METRICS_COLLECTOR" },
-        { "name": "METRICS_MONITOR" },
-        { "name": "TEZ_CLIENT" },
-        { "name": "YARN_CLIENT" },
-        { "name": "ZOOKEEPER_CLIENT" }
       ]
     },
     {
@@ -121,6 +58,34 @@
         { "name": "METRICS_MONITOR" },
         { "name": "NODEMANAGER" }
       ]
+    }
+  ],
+  "configurations": [
+    {
+      "core-site": {
+        "properties" : {
+          "fs.defaultFS" : "hdfs://mycluster",
+          "ha.zookeeper.quorum" : "%HOSTGROUP::master_1%:2181,%HOSTGROUP::master_2%:2181,%HOSTGROUP::master_3%:2181"
+      }}
+    },
+    {
+      "hdfs-site": {
+        "properties" : {
+          "dfs.client.failover.proxy.provider.mycluster" : "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider",
+          "dfs.ha.automatic-failover.enabled" : "true",
+          "dfs.ha.fencing.methods" : "shell(/bin/true)",
+          "dfs.ha.namenodes.mycluster" : "nn1,nn2",
+          "dfs.namenode.http-address" : "%HOSTGROUP::master_1%:50070",
+          "dfs.namenode.http-address.mycluster.nn1" : "%HOSTGROUP::master_1%:50070",
+          "dfs.namenode.http-address.mycluster.nn2" : "%HOSTGROUP::master_3%:50070",
+          "dfs.namenode.https-address" : "%HOSTGROUP::master_1%:50470",
+          "dfs.namenode.https-address.mycluster.nn1" : "%HOSTGROUP::master_1%:50470",
+          "dfs.namenode.https-address.mycluster.nn2" : "%HOSTGROUP::master_3%:50470",
+          "dfs.namenode.rpc-address.mycluster.nn1" : "%HOSTGROUP::master_1%:8020",
+          "dfs.namenode.rpc-address.mycluster.nn2" : "%HOSTGROUP::master_3%:8020",
+          "dfs.namenode.shared.edits.dir" : "qjournal://%HOSTGROUP::master_1%:8485;%HOSTGROUP::master_2%:8485;%HOSTGROUP::master_3%:8485/mycluster",
+          "dfs.nameservices" : "mycluster"
+      }}
     }
   ]
 }
