@@ -1,0 +1,8 @@
+[submodule "related/hdp-blueprints-tutorial"]
+      path = related/hdp-blueprints-tutorial
+      url = https://github.com/dstreev/hdp-blueprints-tutorial
+
+[submodule "related/cloudbreak"]
+      path = related/cloudbreak
+      url = https://github.com/sequenceiq/cloudbreak
+
