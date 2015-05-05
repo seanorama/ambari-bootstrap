@@ -1,0 +1,97 @@
+{
+  "Blueprints": {
+    "stack_name": "HDP",
+    "stack_version": "2.2"
+  },
+  "host_groups": [
+    {
+      "name": "utility",
+      "components": [
+        { "name": "AMBARI_SERVER" },
+        { "name": "FALCON_CLIENT" },
+        { "name": "FLUME_HANDLER" },
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "GANGLIA_SERVER" },
+        { "name": "HBASE_CLIENT" },
+        { "name": "HCAT" },
+        { "name": "HDFS_CLIENT" },
+        { "name": "HIVE_CLIENT" },
+        { "name": "KNOX_GATEWAY" },
+        { "name": "MAPREDUCE2_CLIENT" },
+        { "name": "NAGIOS_SERVER" },
+        { "name": "OOZIE_CLIENT" },
+        { "name": "PIG" },
+        { "name": "SQOOP" },
+        { "name": "TEZ_CLIENT" },
+        { "name": "YARN_CLIENT" }
+      ]
+    },
+    {
+      "name": "master1",
+      "components": [
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "FALCON_SERVER" },
+        { "name": "HISTORYSERVER" },
+        { "name": "JOURNALNODE" },
+        { "name": "NAMENODE" },
+        { "name": "OOZIE_SERVER" },
+        { "name": "SLIDER" },
+        { "name": "ZOOKEEPER_CLIENT" },
+        { "name": "ZOOKEEPER_SERVER" }
+      ]
+    },
+    {
+      "name": "master2",
+      "components": [
+        { "name": "APP_TIMELINE_SERVER" },
+        { "name": "DRPC_SERVER" },
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "JOURNALNODE" },
+        { "name": "KAFKA_BROKER" },
+        { "name": "NIMBUS" },
+        { "name": "RESOURCEMANAGER" },
+        { "name": "STORM_UI_SERVER" },
+        { "name": "ZOOKEEPER_CLIENT" },
+        { "name": "ZOOKEEPER_SERVER" }
+      ]
+    },
+    {
+      "name": "master3",
+      "components": [
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "HBASE_MASTER" },
+        { "name": "HIVE_METASTORE" },
+        { "name": "HIVE_SERVER" },
+        { "name": "JOURNALNODE" },
+        { "name": "MYSQL_SERVER" },
+        { "name": "SECONDARY_NAMENODE" },
+        { "name": "WEBHCAT_SERVER" },
+        { "name": "ZOOKEEPER_CLIENT" },
+        { "name": "ZOOKEEPER_SERVER" }
+      ]
+    },
+    {
+      "name": "slave_1",
+      "components": [
+        { "name": "NODEMANAGER" },
+        { "name": "SUPERVISOR" },
+        { "name": "HBASE_REGIONSERVER" },
+        { "name": "GANGLIA_MONITOR" },
+        { "name": "DATANODE" },
+        { "name": "FLUME_HANDLER" }
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "nagios-env": {
+        "nagios_contact": "root@localhost"
+      }
+    },
+    {
+      "hive-site": {
+        "hive.execution.engine": "tez"
+      }
+    }
+  ]
+}
