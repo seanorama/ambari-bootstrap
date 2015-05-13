@@ -7,6 +7,7 @@
   "host_groups": [
     {
       "name": "gateway",
+      "cardinality" : "1",
       "components": [
         { "name": "AMBARI_SERVER" },
         { "name": "FALCON_CLIENT" },
@@ -29,6 +30,7 @@
     },
     {
       "name": "master_1",
+      "cardinality" : "1",
       "components": [
         { "name": "METRICS_MONITOR" },
         { "name": "FALCON_SERVER" },
@@ -43,6 +45,7 @@
     },
     {
       "name": "master_2",
+      "cardinality" : "1",
       "components": [
         { "name": "APP_TIMELINE_SERVER" },
         { "name": "DRPC_SERVER" },
@@ -58,6 +61,7 @@
     },
     {
       "name": "master_3",
+      "cardinality" : "1",
       "components": [
         { "name": "METRICS_MONITOR" },
         { "name": "HBASE_MASTER" },
