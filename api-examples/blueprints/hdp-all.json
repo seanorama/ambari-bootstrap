@@ -1,5 +1,6 @@
 {
   "Blueprints": {
+    "blueprint_name": "hdp-all-services",
     "stack_name": "HDP",
     "stack_version": "2.2"
   },
