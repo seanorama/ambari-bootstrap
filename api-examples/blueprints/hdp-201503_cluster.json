@@ -1,0 +1,53 @@
+{
+  "blueprint": "hdp-201503",
+  "configurations": [
+    {
+      "hive-site": {
+        "javax.jdo.option.ConnectionPassword": "complexpasswordhere"
+      }
+    }
+  ],
+  "default_password": "admin",
+  "host_groups": [
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-sean01.cloud.hortonworks.com"
+        }
+      ],
+      "name": "utility"
+    },
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-sean02.cloud.hortonworks.com"
+        }
+      ],
+      "name": "master1"
+    },
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-sean03.cloud.hortonworks.com"
+        }
+      ],
+      "name": "master2"
+    },
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-sean04.cloud.hortonworks.com"
+        }
+      ],
+      "name": "master3"
+    },
+    {
+      "hosts": [
+        {
+          "fqdn": "pregion-sean05.cloud.hortonworks.com"
+        }
+      ],
+      "name": "workers"
+    }
+  ]
+}
