@@ -21,6 +21,7 @@
       "name": "master_1",
       "cardinality" : "1",
       "components": [
+        { "name": "HISTORYSERVER" },
         { "name": "JOURNALNODE" },
         { "name": "METRICS_MONITOR" },
         { "name": "NAMENODE" },
@@ -33,7 +34,6 @@
       "cardinality" : "1",
       "components": [
         { "name": "APP_TIMELINE_SERVER" },
-        { "name": "HISTORYSERVER" },
         { "name": "JOURNALNODE" },
         { "name": "METRICS_MONITOR" },
         { "name": "RESOURCEMANAGER" },
