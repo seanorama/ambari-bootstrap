@@ -50,8 +50,6 @@
           "yarn.resourcemanager.ha.enabled" : "true",
           "yarn.resourcemanager.ha.rm-ids" : "rm1,rm2",
           "yarn.resourcemanager.hostname" : "%HOSTGROUP::master_2%",
-          "yarn.resourcemanager.hostname.rm1" : "%HOSTGROUP::master_2%",
-          "yarn.resourcemanager.hostname.rm2" : "%HOSTGROUP::master_3%",
           "yarn.resourcemanager.recovery.enabled" : "true",
           "yarn.resourcemanager.store.class" : "org.apache.hadoop.yarn.server. resourcemanager.recovery.ZKRMStateStore",
           "yarn.timeline-service.address" : "%HOSTGROUP::master_2%:10200",
@@ -60,8 +58,7 @@
           "yarn.resourcemanager.webapp.address.rm2" : "%HOSTGROUP::master_3%:8088",
           "yarn.resourcemanager.webapp.https.address" : "%HOSTGROUP::master_2%:8090",
           "yarn.resourcemanager.webapp.https.address.rm1" : "%HOSTGROUP::master_2%:8090",
-          "yarn.resourcemanager.webapp.https.address.rm2" : "%HOSTGROUP::master_3%:8090",
-          "yarn.resourcemanager.zk-address" : "%HOSTGROUP::master_1%:2181,%HOSTGROUP::master_2%:2181,%HOSTGROUP::master_3%:2181"
+          "yarn.resourcemanager.webapp.https.address.rm2" : "%HOSTGROUP::master_3%:8090"
       }}
     }
   ],
