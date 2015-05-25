@@ -13,8 +13,8 @@
         { "name": "FALCON_CLIENT" },
         { "name": "FALCON_SERVER" },
         { "name": "FLUME_HANDLER" },
-        { "name": "GANGLIA_MONITOR" },
-        { "name": "GANGLIA_SERVER" },
+        { "name": "METRICS_MONITOR" },
+        { "name": "METRICS_COLLECTOR" },
         { "name": "HBASE_CLIENT" },
         { "name": "HBASE_MASTER" },
         { "name": "HBASE_REGIONSERVER" },
@@ -28,7 +28,6 @@
         { "name": "KAFKA_BROKER" },
         { "name": "MAPREDUCE2_CLIENT" },
         { "name": "MYSQL_SERVER" },
-        { "name": "NAGIOS_SERVER" },
         { "name": "NAMENODE" },
         { "name": "NIMBUS" },
         { "name": "NODEMANAGER" },
@@ -48,10 +47,6 @@
         { "name": "ZOOKEEPER_SERVER" }
       ]
     }
-  ],
-  "configurations": [
-    { "nagios-env": { "nagios_contact": "root@localhost" } },
-    { "hive-site": { "javax.jdo.option.ConnectionPassword": "admin" } }
   ]
 }
 
