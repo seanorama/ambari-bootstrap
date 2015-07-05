@@ -22,7 +22,6 @@ install_ambari_server="${install_ambari_server:-false}"
 iptables_disable="${iptables_disable:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-localhost}"
-ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.0.1/ambari.repo}"
 #ambari_aptsource="" # TODO
 curl="curl -sSL"
 
@@ -111,12 +110,23 @@ EOF
 
 case "${lsb_dist}" in
     centos|redhat)
+        os=centos
 
     case "${lsb_dist_release}" in
         6.*)
+            release=6
+            ;;
+
+        6.*|7.*)
+            release=7
+            ;;
+
+        6.*|7.*)
 
         (
             set +o errexit
+
+            ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-6/${os}${release}/ambari.repo}"
 
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
@@ -150,7 +160,7 @@ case "${lsb_dist}" in
 
         if [ "${java_provider}" != 'oracle' ]; then
             printf "## installing java\n"
-            yum install -y java7-devel
+            yum install -y java-1.7.0-openjdk-devel
             mkdir -p /usr/java
             ln -s /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
