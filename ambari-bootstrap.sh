@@ -55,11 +55,11 @@ esac
 lsb_dist=''
 if [ -z "${lsb_dist}" ] && [ -r /etc/centos-release ]; then
     lsb_dist='centos'
-    lsb_dist_release=$(cat /etc/centos-release | sed s/.*release\ // | sed s/\ .*//)
+    lsb_dist_release=$(cut -d" " -f4 /etc/centos-release | cut -d "." -f1)
 fi
 if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
-    lsb_dist='redhat'
-    lsb_dist_release=$(cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//)
+    lsb_dist='centos'
+    lsb_dist_release=$(cut -d" " -f4 /etc/redhat-release | cut -d "." -f1)
 fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
@@ -110,23 +110,14 @@ EOF
 
 case "${lsb_dist}" in
     centos|redhat)
-        os=centos
 
     case "${lsb_dist_release}" in
-        6.*)
-            release=6
-            ;;
-
-        6.*|7.*)
-            release=7
-            ;;
-
-        6.*|7.*)
+        6|7)
 
         (
             set +o errexit
 
-            ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-6/${os}${release}/ambari.repo}"
+            ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-6/${os}${lsb_dist_release}/ambari.repo}"
 
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
