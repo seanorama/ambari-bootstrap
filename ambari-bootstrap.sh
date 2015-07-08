@@ -63,6 +63,8 @@ if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
 fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
+ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-6/${lsb_dist}${lsb_dist_release}/ambari.repo}"
+
 if command_exists ambari-agent || command_exists ambari-server; then
     printf >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.\n'
     printf >&2 'Please ensure that you do not already have ambari-agent installed.\n'
@@ -83,7 +85,7 @@ if [ "${thp_disable}" = true ]; then
             fi
         done
         if test -f /sys/kernel/mm/${path}/khugepaged/defrag; then
-            echo no > /sys/kernel/mm/${path}/khugepaged/defrag
+            echo never > /sys/kernel/mm/${path}/khugepaged/defrag
         fi
     done
 fi
@@ -117,7 +119,6 @@ case "${lsb_dist}" in
         (
             set +o errexit
 
-            ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-6/${os}${lsb_dist_release}/ambari.repo}"
 
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
@@ -144,7 +145,7 @@ case "${lsb_dist}" in
             fi
 
             printf "## Syncing time via ntpd\n"
-            ntp -qg || true
+            ntpd -qg || true
             chkconfig ntpd on || true
             service ntpd restart || true
         )
@@ -195,8 +196,8 @@ cat >&2 <<'EOF'
   easily detectable.
 
   The script currently supports:
-    Red Hat Enterprise Linux 6
-    CentOS 6
+    Red Hat Enterprise Linux 6 & 7
+    CentOS 6 & 7
 
   Please visit the following URL for more detailed installation
   instructions:
