@@ -63,7 +63,7 @@ if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
 fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
-ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-6/${lsb_dist}${lsb_dist_release}/ambari.repo}"
+ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-7/${lsb_dist}${lsb_dist_release}/ambari.repo}"
 
 if command_exists ambari-agent || command_exists ambari-server; then
     printf >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.\n'
