@@ -167,8 +167,8 @@ case "${lsb_dist}" in
             yum install -y ambari-agent
             sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
                 /etc/ambari-agent/conf/ambari-agent.ini
-            ambari-agent start
             chkconfig ambari-agent on
+            ambari-agent start
         fi
         if [ "${install_ambari_server}" = true ]; then
             printf "## install ambari-server\n"
@@ -178,10 +178,10 @@ case "${lsb_dist}" in
             else
                 ambari-server setup -j "${JAVA_HOME}" -s
             fi
+            chkconfig ambari-server on
             if ! nohup sh -c "service ambari-server start 2>&1 > /dev/null"; then
                 printf 'Ambari Server failed to start\n' >&2
             fi
-            chkconfig ambari-server on
         fi
         printf "## Success! All done.\n"
         exit 0
