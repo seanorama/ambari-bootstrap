@@ -55,11 +55,11 @@ esac
 lsb_dist=''
 if [ -z "${lsb_dist}" ] && [ -r /etc/centos-release ]; then
     lsb_dist='centos'
-    lsb_dist_release=$(cut -d" " -f4 /etc/centos-release | cut -d "." -f1)
+    lsb_dist_release=$(awk '{print $(NF-1)}' /etc/centos-release | cut -d "." -f1)
 fi
 if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
     lsb_dist='centos'
-    lsb_dist_release=$(cut -d" " -f4 /etc/redhat-release | cut -d "." -f1)
+    lsb_dist_release=$(awk '{print $(NF-1)}' /etc/redhat-release | cut -d "." -f1)
 fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
