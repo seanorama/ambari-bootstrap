@@ -114,6 +114,8 @@ done
 
 if [ "${host_count}" != "skip" ]; then
     host_check
+else
+    hosts_regd
 fi
 
 # proceeding with building the cluster
