@@ -8,7 +8,7 @@ import argparse
 import json
 
 
-DEFAULT_PASSWORD = 'admin'
+DEFAULT_PASSWORD = 'Fozjostac549'
 
 
 def _merge_configurations(recommended_configurations, custom_configurations):
