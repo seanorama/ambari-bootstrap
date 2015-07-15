@@ -3,7 +3,7 @@
       "core-site": {
         "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
         "hadoop.proxyuser.root.hosts" : "*",
-        "hadoop.proxyuser.root.groups" : "*"
+        "hadoop.proxyuser.root.groups" : "users"
       }
   }
 }
