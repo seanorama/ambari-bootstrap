@@ -8,8 +8,7 @@ import argparse
 import json
 
 
-DEFAULT_PASSWORD = 'Fozjostac549'
-
+DEFAULT_PASSWORD = 'hadoop'
 
 def _merge_configurations(recommended_configurations, custom_configurations):
   """Integrate Ambari's recommendation with user specified configuration."""
