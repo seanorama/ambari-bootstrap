@@ -1,13 +1,7 @@
 {
   "configurations" : {
       "core-site": {
-        "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
-        "hadoop.proxyuser.root.hosts" : "*",
-        "hadoop.proxyuser.root.groups" : "users, hadoop-users",
-        "proxyuser_group_testing" : "users, hadoop-users"
-      },
-      "hadoop-env": {
-        "proxyuser_group_testing" : "users, hadoop-users"
+        "example.configuration": "example value"
       }
   }
 }

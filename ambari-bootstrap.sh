@@ -22,8 +22,10 @@ install_ambari_server="${install_ambari_server:-false}"
 iptables_disable="${iptables_disable:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-localhost}"
-#ambari_aptsource="" # TODO
-curl="curl -sSL"
+ambari_version="${ambari_version:-2.1.0}"
+ambari_version_major="${ambari_version_major:-$(echo ${ambari_version} | cut -c 1).x}"
+##ambari_repo= ## if using a local repo. Otherwise the repo path is determined automatically in a line below.
+curl="curl -ksSL"
 
 command_exists() {
     command -v "$@" > /dev/null 2>&1
@@ -63,7 +65,7 @@ if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
 fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
-ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Dal-Preview/ambari/2.1.0-7/${lsb_dist}${lsb_dist_release}/ambari.repo}"
+ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/${lsb_dist}${lsb_dist_release}/${ambari_version_major}/updates/${ambari_version}/ambari.repo}"
 
 if command_exists ambari-agent || command_exists ambari-server; then
     printf >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.\n'
