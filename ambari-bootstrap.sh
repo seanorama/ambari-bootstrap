@@ -22,9 +22,10 @@ install_ambari_server="${install_ambari_server:-false}"
 iptables_disable="${iptables_disable:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 ambari_server="${ambari_server:-localhost}"
-ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.0.1/ambari.repo}"
-#ambari_aptsource="" # TODO
-curl="curl -sSL"
+ambari_version="${ambari_version:-2.1.0}"
+ambari_version_major="${ambari_version_major:-$(echo ${ambari_version} | cut -c 1).x}"
+##ambari_repo= ## if using a local repo. Otherwise the repo path is determined automatically in a line below.
+curl="curl -ksSL"
 
 command_exists() {
     command -v "$@" > /dev/null 2>&1
@@ -56,13 +57,15 @@ esac
 lsb_dist=''
 if [ -z "${lsb_dist}" ] && [ -r /etc/centos-release ]; then
     lsb_dist='centos'
-    lsb_dist_release=$(cat /etc/centos-release | sed s/.*release\ // | sed s/\ .*//)
+    lsb_dist_release=$(awk '{print $(NF-1)}' /etc/centos-release | cut -d "." -f1)
 fi
 if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
-    lsb_dist='redhat'
-    lsb_dist_release=$(cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//)
+    lsb_dist='centos'
+    lsb_dist_release=$(awk '{print $(NF-1)}' /etc/redhat-release | cut -d "." -f1)
 fi
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
+
+ambari_repo="${ambari_repo:-http://public-repo-1.hortonworks.com/ambari/${lsb_dist}${lsb_dist_release}/${ambari_version_major}/updates/${ambari_version}/ambari.repo}"
 
 if command_exists ambari-agent || command_exists ambari-server; then
     printf >&2 'Warning: "ambari-agent" or "ambari-server" command appears to already exist.\n'
@@ -84,7 +87,7 @@ if [ "${thp_disable}" = true ]; then
             fi
         done
         if test -f /sys/kernel/mm/${path}/khugepaged/defrag; then
-            echo no > /sys/kernel/mm/${path}/khugepaged/defrag
+            echo never > /sys/kernel/mm/${path}/khugepaged/defrag
         fi
     done
 fi
@@ -113,10 +116,11 @@ case "${lsb_dist}" in
     centos|redhat)
 
     case "${lsb_dist_release}" in
-        6.*)
+        6|7)
 
         (
             set +o errexit
+
 
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
@@ -143,14 +147,14 @@ case "${lsb_dist}" in
             fi
 
             printf "## Syncing time via ntpd\n"
-            ntp -qg || true
+            ntpd -qg || true
             chkconfig ntpd on || true
             service ntpd restart || true
         )
 
         if [ "${java_provider}" != 'oracle' ]; then
             printf "## installing java\n"
-            yum install -y java7-devel
+            yum install -y java-1.7.0-openjdk-devel
             mkdir -p /usr/java
             ln -s /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
@@ -165,8 +169,8 @@ case "${lsb_dist}" in
             yum install -y ambari-agent
             sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
                 /etc/ambari-agent/conf/ambari-agent.ini
-            ambari-agent start
             chkconfig ambari-agent on
+            ambari-agent start
         fi
         if [ "${install_ambari_server}" = true ]; then
             printf "## install ambari-server\n"
@@ -176,10 +180,10 @@ case "${lsb_dist}" in
             else
                 ambari-server setup -j "${JAVA_HOME}" -s
             fi
+            chkconfig ambari-server on
             if ! nohup sh -c "service ambari-server start 2>&1 > /dev/null"; then
                 printf 'Ambari Server failed to start\n' >&2
             fi
-            chkconfig ambari-server on
         fi
         printf "## Success! All done.\n"
         exit 0
@@ -194,8 +198,8 @@ cat >&2 <<'EOF'
   easily detectable.
 
   The script currently supports:
-    Red Hat Enterprise Linux 6
-    CentOS 6
+    Red Hat Enterprise Linux 6 & 7
+    CentOS 6 & 7
 
   Please visit the following URL for more detailed installation
   instructions:
