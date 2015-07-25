@@ -31,3 +31,14 @@ ambari-configs() {
 
   #defaultfs=$(${config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 }
+
+ambari-change-pass() {
+  # expects: ambari-change-pass username oldpass newpass
+read -r -d '' body <<EOF
+{ "Users": { "user_name": "$1", "old_password": "$2", "password": "$3" }}
+EOF
+
+  echo ${body}
+  echo "${body}" | ${ambari_curl}/users/$1 \
+    -v -X PUT -d @-
+}

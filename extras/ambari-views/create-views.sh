@@ -8,8 +8,8 @@ source ../ambari_functions.sh
 ambari-configs
 
 ## granting root super user rights
-${ambari_config_set} core-site hadoop.proxyuser.root.groups "users"
-${ambari_config_set} core-site hadoop.proxyuser.root.hosts "$(hostname -f)"
+#${ambari_config_set} core-site hadoop.proxyuser.root.groups "users"
+#${ambari_config_set} core-site hadoop.proxyuser.root.hosts "$(hostname -f)"
 
 webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
 
