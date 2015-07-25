@@ -1,0 +1,31 @@
+{
+  "ViewInstanceInfo": {
+    "instance_name": "Hive",
+    "label": "Hive",
+    "visible": true,
+    "icon_path": "",
+    "icon64_path": "",
+    "description": "Hive",
+    "properties": {
+      "hive.auth": "auth=NONE",
+      "webhdfs.username": "${username}",
+      "webhdfs.auth": null,
+      "views.tez.instance": null,
+      "scripts.dir": "/user/${username}/hive/scripts",
+      "jobs.dir": "/user/${username}/hive/jobs",
+      "scripts.settings.defaults-file": "/user/${username}/.${instanceName}.defaultSettings",
+      "hive.host": "127.0.0.1",
+      "hive.port": "10000",
+      "webhdfs.url": "webhdfs://localhost:50070",
+      "webhdfs.nameservices": null,
+      "webhdfs.ha.namenodes.list": null,
+      "webhdfs.ha.namenode.rpc-address.nn1": null,
+      "webhdfs.ha.namenode.rpc-address.nn2": null,
+      "webhdfs.ha.namenode.http-address.nn1": null,
+      "webhdfs.ha.namenode.http-address.nn2": null,
+      "webhdfs.client.failover.proxy.provider": null,
+      "yarn.ats.url": "http://localhost:8188",
+      "yarn.resourcemanager.url": "http://localhost:8088"
+    }
+  }
+}
