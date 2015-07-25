@@ -11,7 +11,7 @@ ambari-configs
 ${ambari_config_set} core-site hadoop.proxyuser.root.groups "users"
 ${ambari_config_set} core-site hadoop.proxyuser.root.hosts "$(hostname -f)"
 
-webhdfs=$(${config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
+webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
 
 ## install views
 views="hive files pig"
