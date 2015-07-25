@@ -5,9 +5,10 @@
 ## todo: include my code that's in bdutil:
 ##   https://github.com/GoogleCloudPlatform/bdutil/blob/master/platforms/hdp/ambari_functions.sh
 
+source ~/.ambari.conf
 
 ambari_user=${ambari_user:-admin}
-ambari_pass=${ambari_password:-admin}
+ambari_pass=${ambari_pass:-admin}
 ambari_protocol=${ambari_protocol:-http}
 ambari_host=${ambari_host:-localhost}
 ambari_port=${ambari_port:-8080}
