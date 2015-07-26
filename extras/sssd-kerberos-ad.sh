@@ -58,6 +58,7 @@ sudo tee /etc/sssd/sssd.conf > /dev/null <<EOF
 services = nss, pam, ssh, autofs
 config_file_version = 2
 domains = ${ad_realm}
+override_space = _
 [domain/${ad_realm}]
 id_provider = ad
 acess_provider = ad
