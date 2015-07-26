@@ -29,8 +29,10 @@ ${ambari_config_set} kms-properties REPOSITORY_CONFIG_PASSWORD "BadPass#1"
 ${ambari_config_set} kms-properties REPOSITORY_CONFIG_USERNAME "keyadmin@HORTONWORKS.COM"
 ${ambari_config_set} kms-properties common.name.for.certificate " "
 
-${ambari_config_set} kms-site hadoop.kms.proxyuser.keyadmin.hosts "$(hostname -f),localhost"
+${ambari_config_set} kms-site hadoop.kms.proxyuser.keyadmin.hosts "*"
 ${ambari_config_set} kms-site hadoop.kms.proxyuser.keyadmin.groups "users, hadoop-users"
+${ambari_config_set} kms-site hadoop.kms.proxyuser.rangeradmin.hosts "*"
+${ambari_config_set} kms-site hadoop.kms.proxyuser.rangeradmin.groups "users, hadoop-users"
 
 ${ambari_config_set} ranger-kms-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-kms-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
