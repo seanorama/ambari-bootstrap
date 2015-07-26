@@ -1,44 +1,29 @@
 #!/usr/bin/env bash
 
-sudo yum makecache
-sudo yum -y install epel-release
-sudo yum -y install jq
+# Set magic variables for current file & dir
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
+__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
+__base="$(basename ${__file} .sh)"
 
-source ../ambari_functions.sh
-ambari-configs
+export users="$(getent passwd|awk -F: '$3>499{print $1}')"
+${__dir}/../onboarding.sh
 
 mkdir ~/hadoop-sample-data/
 cd ~/hadoop-sample-data
 
-users="$(getent passwd|awk -F: '$3>499{print $1}')"
+dfs_cmd="sudo sudo -u hdfs hadoop fs"
 
-ldap_user=ldap-connect@hortonworks.com
-ldap_pass="BadPass#1"
-users=$(ldapsearch -w ${ldap_pass} -D ${ldap_user} "(homeDirectory=/home/*)" uid | awk '/^uid: / {print $2}')
-#users+=$(ldapsearch -w ${ldap_pass} -D ${ldap_user} "(UnixHomeDirectory=/home/*)" sAMAccountName | awk '/^sAMAccountName: / {print $2}')
-users+=$(ldapsearch -w ${ldap_pass} -D ${ldap_user} "(memberOf=CN=hadoop-users,OU=users,OU=hdp,DC=hortonworks,DC=com)" sAMAccountName | awk '/^sAMAccountName: / {print $2}')
-#users+=" $(getent passwd | grep '/home' | cut -d ':' -f 1)"
-users=$(echo ${users} | xargs -n1 | sort -u | xargs)
-for user in ${users}; do
-  dfs_cmd="sudo sudo -u hdfs hadoop fs"
-  if ! ${dfs_cmd} -stat /user/${user}; then
-    ${dfs_cmd} -mkdir -p "/user/${user}"
-    ${dfs_cmd} -chown "${user}" "/user/${user}" &
-  fi
-done
-
-####
-## populate data
-
-HADOOP_USER_NAME=hdfs hadoop fs -mkdir /public
-HADOOP_USER_NAME=hdfs hadoop fs -chmod 777 /public
-HADOOP_USER_NAME=admin hadoop fs -mkdir -p /public/samples
+${dfs_cmd} -mkdir /public
+${dfs_cmd} -chmod 777 /public
+${dfs_cmd} -mkdir -p /public/samples
 
 ## Sandbox data sets
-curl -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_07.csv
-curl -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_08.csv
-HADOOP_USER_NAME=admin hadoop fs -put sample_07.csv sample_08.csv /public/samples
+curl -sSL -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_07.csv
+curl -sSL -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_08.csv
+${dfs_cmd} -put sample_07.csv sample_08.csv /public/samples
 
+exit 
 cat > sample-populate.sql <<-'EOF'
 CREATE TABLE `sample_07` (
 `code` string ,
@@ -57,13 +42,12 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TextFile;
 load data  inpath '/public/samples/sample_08.csv' into table sample_08;
 EOF
 
-beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -f sample-populate.sql
+beeline -u jdbc:hive2://$(hostname -f):10000/default -f sample-populate.sql
 
 ## Trucking demo data sets
-curl -O https://raw.githubusercontent.com/seanorama/masterclass/master/data/Geolocation.zip
+curl -sSL -O https://raw.githubusercontent.com/seanorama/masterclass/master/data/Geolocation.zip
 unzip Geolocation.zip
-HADOOP_USER_NAME=admin hadoop fs -put geolocation.csv trucks.csv /public/samples
-
+${dfs_cmd} -put geolocation.csv trucks.csv /public/samples
 
 ## Trucking demo tables
 cat > geolocation_stage.sql <<-'EOF'
@@ -73,7 +57,7 @@ FIELDS TERMINATED BY ','
 STORED AS TEXTFILE;
 EOF
 
-beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -f geolocation_stage.sql
+beeline -u jdbc:hive2://$(hostname -f):10000/default -f geolocation_stage.sql
 
 cat > trucks_stage.sql <<-'EOF'
 CREATE TABLE trucks_stage(driverid string, truckid string, model string, jun13_miles bigint, jun13_gas bigint, may13_miles bigint, may13_gas bigint, apr13_miles bigint, apr13_gas bigint, mar13_miles bigint, mar13_gas bigint, feb13_miles bigint, feb13_gas bigint, jan13_miles bigint, jan13_gas bigint, dec12_miles bigint, dec12_gas bigint, nov12_miles bigint, nov12_gas bigint, oct12_miles bigint, oct12_gas bigint, sep12_miles bigint, sep12_gas bigint, aug12_miles bigint, aug12_gas bigint, jul12_miles bigint, jul12_gas bigint, jun12_miles bigint, jun12_gas bigint,may12_miles bigint, may12_gas bigint, apr12_miles bigint, apr12_gas bigint, mar12_miles bigint, mar12_gas bigint, feb12_miles bigint, feb12_gas bigint, jan12_miles bigint, jan12_gas bigint, dec11_miles bigint,  dec11_gas bigint, nov11_miles bigint, nov11_gas bigint, oct11_miles bigint, oct11_gas bigint, sep11_miles bigint, sep11_gas bigint, aug11_miles bigint, aug11_gas bigint, jul11_miles bigint, jul11_gas bigint, jun11_miles bigint, jun11_gas bigint, may11_miles bigint, may11_gas bigint, apr11_miles bigint, apr11_gas bigint, mar11_miles bigint, mar11_gas bigint, feb11_miles bigint, feb11_gas bigint, jan11_miles bigint, jan11_gas bigint, dec10_miles bigint, dec10_gas bigint, nov10_miles bigint, nov10_gas bigint, oct10_miles bigint, oct10_gas bigint, sep10_miles bigint, sep10_gas bigint, aug10_miles bigint, aug10_gas bigint, jul10_miles bigint, jul10_gas bigint, jun10_miles bigint, jun10_gas bigint, may10_miles bigint, may10_gas bigint, apr10_miles bigint, apr10_gas bigint, mar10_miles bigint, mar10_gas bigint, feb10_miles bigint, feb10_gas bigint, jan10_miles bigint, jan10_gas bigint, dec09_miles bigint, dec09_gas bigint, nov09_miles bigint, nov09_gas bigint, oct09_miles bigint, oct09_gas bigint, sep09_miles bigint, sep09_gas bigint, aug09_miles bigint, aug09_gas bigint, jul09_miles bigint, jul09_gas bigint, jun09_miles bigint, jun09_gas bigint, may09_miles bigint, may09_gas bigint, apr09_miles bigint, apr09_gas bigint, mar09_miles bigint, mar09_gas bigint, feb09_miles bigint, feb09_gas bigint, jan09_miles bigint, jan09_gas bigint)
@@ -82,13 +66,13 @@ FIELDS TERMINATED BY ','
 STORED AS TEXTFILE;
 EOF
 
-beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -f trucks_stage.sql
+beeline -u jdbc:hive2://$(hostname -f):10000/default -f trucks_stage.sql
 
-beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -e \
+beeline -u jdbc:hive2://$(hostname -f):10000/default -e \
   "LOAD DATA INPATH '/public/samples/geolocation.csv' OVERWRITE INTO TABLE geolocation_stage;"
-beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -e \
+beeline -u jdbc:hive2://$(hostname -f):10000/default -e \
   "LOAD DATA INPATH '/public/samples/trucks.csv' OVERWRITE INTO TABLE trucks_stage;"
-beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -e \
+beeline -u jdbc:hive2://$(hostname -f):10000/default -e \
   "CREATE TABLE geolocation STORED AS ORC AS SELECT * FROM geolocation_stage;"
 beeline -n admin -u jdbc:hive2://$(hostname -f):10000/default -e \
   "CREATE TABLE trucks STORED AS ORC AS SELECT * FROM trucks_stage;"
