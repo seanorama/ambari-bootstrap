@@ -13,6 +13,7 @@ ambari-configs
 webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 
+## TODO: Check when this will be fixed.
 sudo ln -s /usr/hdp/current/hadoop-client/conf/core-site.xml /usr/hdp/current/ranger-kms/conf/
 
 sudo keytool -import -trustcacerts -alias root \
@@ -25,7 +26,7 @@ ${ambari_config_set} kms-properties REPOSITORY_CONFIG_PASSWORD "BadPass#1"
 ${ambari_config_set} kms-properties REPOSITORY_CONFIG_USERNAME "keyadmin@HORTONWORKS.COM"
 ${ambari_config_set} kms-properties common.name.for.certificate " "
 
-${ambari_config_set} kms-site hadoop.kms.proxyuser.keyadmin.hosts "$(hostname -f)"
+${ambari_config_set} kms-site hadoop.kms.proxyuser.keyadmin.hosts "$(hostname -f),localhost"
 ${ambari_config_set} kms-site hadoop.kms.proxyuser.keyadmin.groups "users, hadoop-users"
 
 ${ambari_config_set} ranger-kms-audit xasecure.audit.destination.db true
