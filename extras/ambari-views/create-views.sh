@@ -3,7 +3,13 @@
 ## install Amabari Views with the JSON files in this directory
 ##  this only works on non-kerberized clusters where all servers are on the same node
 
-source ../ambari_functions.sh
+# Set magic variables for current file & dir
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
+__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
+__base="$(basename ${__file} .sh)"
+
+source ${__dir}/../ambari_functions.sh
 
 ambari-configs
 
@@ -16,7 +22,7 @@ webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-a
 ## install views
 views="hive files pig"
 for view in ${views}; do
-  sed -e "s,webhdfs://.*:50070,webhdfs://${webhdfs}," ${view}.json > /tmp/ambari-view-${view}.json
+  sed -e "s,webhdfs://.*:50070,webhdfs://${webhdfs}," ${__dir}/${view}.json > /tmp/ambari-view-${view}.json
   ${ambari_curl}/views/${view^^}/versions/1.0.0/instances/${view~} \
     -v -X POST -d @/tmp/ambari-view-${view}.json
 done
