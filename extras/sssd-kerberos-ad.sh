@@ -39,7 +39,8 @@ fi
 
 sudo yum makecache
 sudo yum -y install epel-release ## epel is required for adcli
-sudo yum -y install sssd oddjob-mkhomedir authconfig adcli sssd-krb5 sssd-ad sssd-tools
+sudo yum -y install sssd oddjob-mkhomedir authconfig sssd-krb5 sssd-ad sssd-tools libnss-sss libpam-sss
+sudo yum -y install adcli
 
 echo ${ad_pass} | sudo kinit ${ad_user}
 
@@ -59,10 +60,11 @@ config_file_version = 2
 domains = ${ad_realm}
 [domain/${ad_realm}]
 id_provider = ad
-# Uncomment if service discovery is not working
+acess_provider = ad
+## ad_server is not needed when the DC is managing DNS, so can be discovered
 ad_server = ${ad_dc}
-ldap_user_principal = nosuchattribute
-ldap_search_base = ${ad_root}
+#ldap_user_principal = nosuchattribute
+#ldap_search_base = ${ad_root}
 EOF
 sudo chmod 0600 /etc/sssd/sssd.conf
 
