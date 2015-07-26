@@ -27,3 +27,6 @@ ${ambari_config_set} hiveserver2-site hive.security.authorization.enabled true
 
 ${ambari_config_set} ranger-hive-plugin-properties ranger-hive-plugin-enabled yes
 
+hive_conf_restricted_list=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.conf.restricted.list" {print $4",hive.security.authorization.enabled"}' | head -1)
+${ambari_config_set} hive-site hive.conf.restricted.list "${hive_conf_restricted_list}"
+
