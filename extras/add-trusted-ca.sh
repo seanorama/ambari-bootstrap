@@ -38,5 +38,5 @@ if command -v keytool; then
   sudo keytool -import -trustcacerts -noprompt -storepass changeit \
     -file ${mycert} -keystore /etc/pki/java/cacerts
   sudo keytool -importcert -noprompt -storepass changeit \
-    -file ${mycert} -keystore /etc/pki/java/cacerts
+    -file ${mycert} -alias ad -keystore /etc/pki/java/cacerts
 fi
