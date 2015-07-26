@@ -21,6 +21,9 @@ sudo keytool -import -trustcacerts -alias root \
   -file /etc/pki/ca-trust/source/anchors/activedirectory.pem \
   -keystore /usr/hdp/current/ranger-kms/conf/ranger-plugin-keystore.jks
 
+sudo sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs-$(hostname -s)
+sudo sudo -u hdfs hadoop fs -mkdir /ranger/audit/kms
+
 ## Ranger KMS
 ${ambari_config_set} kms-properties REPOSITORY_CONFIG_PASSWORD "BadPass#1"
 ${ambari_config_set} kms-properties REPOSITORY_CONFIG_USERNAME "keyadmin@HORTONWORKS.COM"
