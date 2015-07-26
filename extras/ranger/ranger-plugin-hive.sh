@@ -10,7 +10,6 @@ source ${__dir}/../ambari_functions.sh
 
 ambari-configs
 
-webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 
 ## Ranger Hive Plugin

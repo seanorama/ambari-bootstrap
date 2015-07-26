@@ -20,6 +20,7 @@ dfs_cmd="sudo sudo -u hdfs hadoop fs"
 ${dfs_cmd} -mkdir /public
 ${dfs_cmd} -chmod 777 /public
 ${dfs_cmd} -mkdir -p /public/samples
+${dfs_cmd} -mkdir -p /public/secured/dir1
 
 ## Sandbox data sets
 curl -sSL -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_07.csv

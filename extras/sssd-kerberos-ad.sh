@@ -80,11 +80,9 @@ sudo kdestroy
 echo You will now need to restart HDFS for it to recieve the changes and user/group mappings.
 
 ## test with:
-echo su - UserNameFromAd
 echo id
 echo hdfs groups
 
-## $ su - sean
 ## $ id
 ## uid=1139201162(sean) gid=1139200513(domain users) groups=1139200513(domain users),1139201177(hadoop-users) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
 ## $ hdfs groups

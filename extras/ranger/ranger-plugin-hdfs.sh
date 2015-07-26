@@ -22,3 +22,12 @@ ${ambari_config_set} ranger-hdfs-plugin-properties common.name.for.certificate "
 ${ambari_config_set} core-site hadoop.security.authorization true
 ${ambari_config_set} hdfs-site dfs.namenode.inode.attributes.provider.class org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer
 ${ambari_config_set} ranger-hdfs-plugin-properties ranger-hdfs-plugin-enabled yes
+
+### (optional) For demoing only to get hdfs audits quickly
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.hdfs.async.max.flush.interval.ms 30000
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.hdfs.config.destination.flush.interval.seconds 60
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.hdfs.config.destination.open.retry.interval.seconds 60
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.hdfs.config.destination.rollover.interval.seconds 30
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.hdfs.config.local.buffer.flush.interval.seconds 60
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.hdfs.config.local.buffer.rollover.interval.seconds 60
+

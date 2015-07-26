@@ -13,7 +13,7 @@ ambari_protocol=${ambari_protocol:-http}
 ambari_host=${ambari_host:-localhost}
 ambari_port=${ambari_port:-8080}
 ambari_api="${ambari_protocol}://${ambari_host}:${ambari_port}/api/v1"
-ambari_curl="curl -ksSu ${ambari_user}:${ambari_pass} -H x-requested-by:sean ${ambari_api}"
+export ambari_curl="curl -ksSu ${ambari_user}:${ambari_pass} -H x-requested-by:sean ${ambari_api}"
 
 ## auto-detect cluster
 
