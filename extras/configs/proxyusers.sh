@@ -16,4 +16,6 @@ ambari-configs
 users="hbase hcat hive HTTP knox"
 for user in ${users}; do
   ${ambari_config_set} core-site hadoop.proxyuser.${user}.groups "users,hadoop-users"
+  ${ambari_config_set} core-site hadoop.proxyuser.${user}.hosts "*"
 done
+
