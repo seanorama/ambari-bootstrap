@@ -18,6 +18,8 @@ ${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.is.enabled true
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.provider.summary.enabled true
+${ambari_config_set} ranger-hdfs-plugin-properties REPOSITORY_CONFIG_USERNAME rangeradmin
+${ambari_config_set} ranger-hdfs-plugin-properties REPOSITORY_CONFIG_PASSWORD BadPass#1
 ${ambari_config_set} ranger-hdfs-plugin-properties common.name.for.certificate " "
 ${ambari_config_set} core-site hadoop.security.authorization true
 ${ambari_config_set} hdfs-site dfs.namenode.inode.attributes.provider.class org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer
