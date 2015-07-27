@@ -17,7 +17,7 @@ ${ambari_config_set} ranger-knox-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-knox-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
 ${ambari_config_set} ranger-knox-audit xasecure.audit.is.enabled true
 ${ambari_config_set} ranger-knox-audit xasecure.audit.provider.summary.enabled true
-${ambari_config_set} REPOSITORY_CONFIG_USERNAME REPOSITORY_CONFIG_PASSWORD rangeradmin
-${ambari_config_set} REPOSITORY_CONFIG_PASSWORD REPOSITORY_CONFIG_PASSWORD BadPass#1
+${ambari_config_set} ranger-knox-plugin-properties REPOSITORY_CONFIG_PASSWORD rangeradmin
+${ambari_config_set} ranger-knox-plugin-properties REPOSITORY_CONFIG_PASSWORD BadPass#1
 ${ambari_config_set} ranger-knox-plugin-properties common.name.for.certificate " "
 ${ambari_config_set} ranger-knox-plugin-properties ranger-knox-plugin-enabled yes
