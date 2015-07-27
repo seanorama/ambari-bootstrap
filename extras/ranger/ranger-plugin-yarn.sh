@@ -12,6 +12,9 @@ ambari-configs
 
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 
+sudo sudo -u hdfs hadoop fs -mkdir /ranger/audit/yarn
+sudo sudo -u hdfs chown yarn /ranger/audit/yarn
+
 ## Ranger YARN Plugin
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"

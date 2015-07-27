@@ -12,6 +12,7 @@ ambari-configs
 
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 
+
 ## Ranger Knox Plugin
 ${ambari_config_set} ranger-knox-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-knox-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
