@@ -81,6 +81,7 @@ sudo kdestroy
 echo You will now need to restart HDFS for it to recieve the changes and user/group mappings.
 
 ## test with:
+echo su -u $(whoami)
 echo id
 echo hdfs groups
 
