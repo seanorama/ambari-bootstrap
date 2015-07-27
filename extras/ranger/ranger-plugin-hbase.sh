@@ -12,14 +12,15 @@ ambari-configs
 
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 
-sudo sudo -u hdfs hadoop fs -mkdir /ranger/audit/hbaseMaster
-sudo sudo -u hdfs hadoop fs -mkdir /ranger/audit/hbaseRegional
+sudo sudo -u hdfs hadoop fs -mkdir -p /ranger/audit/hbaseMaster
+sudo sudo -u hdfs hadoop fs -mkdir -p /ranger/audit/hbaseRegional
 sudo sudo -u hdfs hadoop fs -chown hbase /ranger/audit/hbaseRegional
 sudo sudo -u hdfs hadoop fs -chown hbase /ranger/audit/hbaseMaster
 
 ## Ranger HBase Plugin
 ${ambari_config_set} hbase-site hbase.security.authorization true
-${ambari_config_set} hbase-site hbase.coprocessor.master.classes org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor
+${ambari_config_set} hbase-site hbase.coprocessor.region.classes '{{hbase_coprocessor_region_classes}}'
+${ambari_config_set} hbase-site hbase.coprocessor.master.classes '{{hbase_coprocessor_master_classes}}'
 
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"

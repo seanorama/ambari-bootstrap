@@ -22,7 +22,7 @@ sudo ln -s /usr/hdp/current/hadoop-client/conf/core-site.xml /usr/hdp/current/ra
 #  -keystore /usr/hdp/current/ranger-kms/conf/ranger-plugin-keystore.jks
 
 #sudo sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs-$(hostname -s)
-sudo sudo -u hdfs hadoop fs -mkdir /ranger/audit/kms
+sudo sudo -u hdfs hadoop fs -mkdir -p /ranger/audit/kms
 sudo sudo -u hdfs hadoop fs -chown kms /ranger/audit/kms
 
 ## Ranger KMS
