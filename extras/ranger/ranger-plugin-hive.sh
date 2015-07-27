@@ -13,7 +13,7 @@ ambari-configs
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 
 sudo sudo -u hdfs hadoop fs -mkdir /ranger/audit/hiveServer2
-sudo sudo -u hdfs chown hive /ranger/audit/hiveServer2
+sudo sudo -u hdfs hadoop fs -chown hive /ranger/audit/hiveServer2
 
 ## Ranger Hive Plugin
 ${ambari_config_set} ranger-hive-audit xasecure.audit.destination.db true
