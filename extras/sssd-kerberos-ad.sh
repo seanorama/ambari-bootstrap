@@ -53,6 +53,10 @@ sudo adcli join -v \
   --login-ccache="/tmp/krb5cc_0" \
   --show-details
 
+## todo:
+##   pam, ssh, autofs should be disabled on master & data nodes
+##   - we only need nss on those nodes
+##   - edge nodes need the ability to login
 sudo tee /etc/sssd/sssd.conf > /dev/null <<EOF
 [sssd]
 services = nss, pam, ssh, autofs
