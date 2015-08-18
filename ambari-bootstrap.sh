@@ -86,9 +86,6 @@ if [ "${thp_disable}" = true ]; then
                 echo never > /sys/kernel/mm/${path}/${file}
             fi
         done
-        if test -f /sys/kernel/mm/${path}/khugepaged/defrag; then
-            echo never > /sys/kernel/mm/${path}/khugepaged/defrag
-        fi
     done
 fi
 exit 0
