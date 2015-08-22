@@ -13,8 +13,8 @@ source ${__dir}/../ambari_functions.sh
 ambari-configs
 
 ## granting root super user rights
-users="hbase hcat hive HTTP knox"
-for user in ${users}; do
+proxyusers="${proxyusers:-hbase hcat hive HTTP knox}"
+for user in ${proxyusers}; do
   ${ambari_config_set} core-site hadoop.proxyuser.${user}.groups "users,hadoop-users"
   ${ambari_config_set} core-site hadoop.proxyuser.${user}.hosts "*"
 done
