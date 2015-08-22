@@ -5,7 +5,6 @@
 ##
 ## - You should execute on all nodes in the cluster
 ## - HDFS will need to be restarted after executing this script on the NameNode(s)
-##
 
 ## Requirements
 ##
@@ -22,15 +21,26 @@
 ##
 
 ## Change these to fit your environment
-ad_user=lab01admin ## this is your admin user
-ad_domain=hortonworks.com
-ad_workgroup=HORTONWORKS
-ad_dc=activedirectory.hortonworks.com ## not required if the AD server is also your DNS server
-ad_root="dc=hortonworks,dc=com"
-ad_ou="ou=lab01,ou=labs,${ad_root}"
+ad_user=${ad_user:-lab01admin} ## this is your admin user
+ad_domain=${ad_domain:-hortonworks.com}
+ad_dc=${ad_dc:-activedirectory.hortonworks.com}
+ad_root="${ad_root:-dc=hortonworks,dc=com}"
+ad_ou="${ad_ou:-ou=lab01,ou=labs,${ad_root}}"
 
 ## You shouldn’t need to change anything below this
 
+## LDAP configuration to use the systems PKI and a default LDAP server
+sudo tee /etc/openldap/ldap.conf > /dev/null << EOF
+URI ldaps://${ad_dc}
+BASE ${ad_root}
+TLS_CACERTDIR /etc/pki/tls/certs
+TLS_CACERT /etc/pki/tls/certs/ca-bundle.crt
+SASL_NOCANON    on
+EOF
+## can test with:
+#ldapsearch -W -D user@domain.com
+
+## Prompt for AD password
 ad_realm=${ad_domain^^}
 if [ -z ${ad_pass+x} ]; then 
   read -s -p "Password of ${ad_user}@${ad_realm}: " ad_pass
@@ -59,6 +69,7 @@ sudo adcli join -v \
 ##   - edge nodes need the ability to login
 sudo tee /etc/sssd/sssd.conf > /dev/null <<EOF
 [sssd]
+## master & data nodes only require nss. Edge nodes require pam.
 services = nss, pam, ssh, autofs
 config_file_version = 2
 domains = ${ad_realm}
