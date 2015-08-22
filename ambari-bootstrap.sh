@@ -153,7 +153,7 @@ case "${lsb_dist}" in
             printf "## installing java\n"
             yum install -y java-1.7.0-openjdk-devel
             mkdir -p /usr/java
-            ln -s /etc/alternatives/java_sdk /usr/java/default
+            ln -sf /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
         fi
 
