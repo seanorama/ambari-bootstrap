@@ -5,7 +5,14 @@
 ## todo: include my code that's in bdutil:
 ##   https://github.com/GoogleCloudPlatform/bdutil/blob/master/platforms/hdp/ambari_functions.sh
 
-source ~/.ambari.conf
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
+__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
+__base="$(basename ${__file} .sh)"
+
+test -f ${__dir}/.ambari.conf && source ${__dir}/.ambari.conf
+test -f ~/.ambari.conf && source ~/.ambari.conf
+
 
 ambari_user=${ambari_user:-admin}
 ambari_pass=${ambari_pass:-admin}
@@ -13,7 +20,8 @@ ambari_protocol=${ambari_protocol:-http}
 ambari_host=${ambari_host:-localhost}
 ambari_port=${ambari_port:-8080}
 ambari_api="${ambari_protocol}://${ambari_host}:${ambari_port}/api/v1"
-export ambari_curl="curl -ksSu ${ambari_user}:${ambari_pass} -H x-requested-by:sean ${ambari_api}"
+ambari_curl_cmd="curl -ksSu ${ambari_user}:${ambari_pass} -H x-requested-by:sean"
+export ambari_curl="${ambari_curl_cmd} ${ambari_api}"
 
 ## auto-detect cluster
 
@@ -43,3 +51,47 @@ EOF
   echo "${body}" | ${ambari_curl}/users/$1 \
     -v -X PUT -d @-
 }
+
+AMBARI_TIMEOUT=${AMBARI_TIMEOUT:-3600}
+POLLING_INTERVAL=${POLLING_INTERVAL:-10}
+
+function ambari_wait() {
+  local condition="$1"
+  local goal="$2"
+  local failed="FAILED"
+  local limit=$(( ${AMBARI_TIMEOUT} / ${POLLING_INTERVAL} + 1 ))
+
+  for (( i=0; i<${limit}; i++ )); do
+    local status=$(bash -c "${condition}")
+    if [ "${status}" = "${goal}" ]; then
+      break
+    elif [ "${status}" = "${failed}" ]; then
+      echo "Ambari operiation failed with status: ${status}" >&2
+      return 1
+    fi
+    echo "ambari_wait status: ${status}" >&2
+    sleep ${POLLING_INTERVAL}
+  done
+
+  if [ ${i} -eq ${limit} ]; then
+    echo "ambari_wait did not finish within" \
+        "'${AMBARI_TIMEOUT}' seconds. Exiting." >&2
+    return 1
+  fi
+}
+
+# Only useful during a fresh install where we expect no failures
+# Will not work if any requested TIMEDOUT/ABORTED
+function ambari_wait_requests_completed() {
+      ambari-get-cluster
+      # Poll for completion
+      ambari_wait "${ambari_curl}/clusters/${ambari_cluster}/requests \
+            | grep -Eo 'http://.*/requests/[^\"]+' \
+            | tail -1 \
+            | xargs ${ambari_curl_cmd} \
+            | grep request_status \
+            | uniq \
+            | tr -cd '[:upper:]'" \
+            'COMPLETED'
+}
+
