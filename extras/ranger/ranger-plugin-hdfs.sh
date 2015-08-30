@@ -30,9 +30,9 @@ ${ambari_config_set} ranger-hdfs-audit xasecure.audit.provider.summary.enabled t
 if [ -z "${realm}" ]; then
   echo
 else
-  echo ${ambari_config_set} ranger-hdfs-plugin-properties REPOSITORY_CONFIG_USERNAME "rangeradmin@${realm}"
-  echo ${ambari_config_set} ranger-hdfs-plugin-properties REPOSITORY_CONFIG_PASSWORD "${mypass}"
-  echo ${ambari_config_set} ranger-hdfs-plugin-properties policy_user "rangeradmin"
+  ${ambari_config_set} ranger-hdfs-plugin-properties REPOSITORY_CONFIG_USERNAME "rangeradmin@${realm}"
+  ${ambari_config_set} ranger-hdfs-plugin-properties REPOSITORY_CONFIG_PASSWORD "${mypass}"
+  ${ambari_config_set} ranger-hdfs-plugin-properties policy_user "rangeradmin"
 fi
 ${ambari_config_set} ranger-hdfs-plugin-properties common.name.for.certificate " "
 ${ambari_config_set} ranger-hdfs-plugin-properties hadoop.rpc.protection " "
