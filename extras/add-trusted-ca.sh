@@ -15,12 +15,6 @@ fi
 sudo yum -y install openldap-clients ca-certificates
 
 ## System keystore
-sudo update-ca-trust enable
-sudo update-ca-trust extract; sudo update-ca-trust check
-
-## Java keystore. Requires Java to be installed first.
-if command -v keytool; then
-  sudo keytool -importcert -noprompt -storepass changeit \
-    -file ${mycert} -alias ad -keystore /etc/pki/java/cacerts
-fi
-
+sudo update-ca-trust force-enable
+sudo update-ca-trust extract
+sudo update-ca-trust check
