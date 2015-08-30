@@ -38,7 +38,7 @@ ${ambari_config_set} ranger-admin-site ranger.ldap.ad.url "ldap://activedirector
 ${ambari_config_set} ranger-admin-site ranger.ldap.ad.base.dn "dc=hortonworks,dc=com"
 ${ambari_config_set} ranger-admin-site ranger.ldap.ad.bind.dn "cn=ldap-connect,ou=users,ou=hdp,dc=hortonworks,dc=com"
 ${ambari_config_set} ranger-admin-site ranger.ldap.ad.referral follow
-${ambari_config_set} ranger-admin-site ranger.ldap.ad.bind.password "#{mypass}"
+${ambari_config_set} ranger-admin-site ranger.ldap.ad.bind.password "${mypass}"
 
 #${ambari_config_set} ranger-admin-site ranger.ldap.ad.bind.password "_"
 #${ambari_config_set} ranger-admin-site ranger.ldap.ad.binddn.credential.alias "${ad_password_alias}"
