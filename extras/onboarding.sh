@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-#users="$(getent passwd|awk -F: '$3>499{print $1}')"
-users=${users:-jimmy}
+UID_MIN=$(awk '$1=="UID_MIN" {print $2}' /etc/login.defs)
+users="$(getent passwd|awk -v UID_MIN="${UID_MIN}" -F: '$3>=UID_MIN{print $1}')"
+#users=${users:-jimmy}
 
 dfs_cmd="sudo sudo -u hdfs hadoop fs"
 # sudo sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs
