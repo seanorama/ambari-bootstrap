@@ -8,7 +8,6 @@ __base="$(basename ${__file} .sh)"
 
 ${__dir}/../ambari-views/create-views.sh
 
-export users="$(getent passwd|awk -F: '$3>499{print $1}')"
 ${__dir}/../onboarding.sh
 
 sudo mkdir -p /opt/hadoop/samples
