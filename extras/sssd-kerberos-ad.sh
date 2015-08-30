@@ -29,16 +29,24 @@ ad_ou="${ad_ou:-ou=lab01,ou=labs,${ad_root}}"
 
 ## You shouldn’t need to change anything below this
 
+sudo yum makecache
+sudo yum -y install epel-release ## epel is required for adcli
+sudo yum -y install sssd oddjob-mkhomedir authconfig sssd-krb5 sssd-ad sssd-tools libnss-sss libpam-sss openldap-clients
+sudo yum -y install adcli
+
 ## LDAP configuration to use the systems PKI and a default LDAP server
 sudo tee /etc/openldap/ldap.conf > /dev/null << EOF
-URI ldaps://${ad_dc}
+URI ldap://${ad_dc}
 BASE ${ad_root}
 TLS_CACERTDIR /etc/pki/tls/certs
-TLS_CACERT /etc/pki/tls/certs/ca-bundle.crt
+TLS_CACERT /etc/pki/tls/cert.pem
+SASL_MECH GSSAPI
 SASL_NOCANON    on
-EOF
+
 ## can test with:
-#ldapsearch -W -D user@domain.com
+#ldapsearch -W -D student@hortonworks.com
+#kinit; ldapsearch
+EOF
 
 ## Prompt for AD password
 ad_realm=${ad_domain^^}
@@ -47,10 +55,6 @@ if [ -z ${ad_pass+x} ]; then
   echo
 fi
 
-sudo yum makecache
-sudo yum -y install epel-release ## epel is required for adcli
-sudo yum -y install sssd oddjob-mkhomedir authconfig sssd-krb5 sssd-ad sssd-tools libnss-sss libpam-sss
-sudo yum -y install adcli
 
 echo ${ad_pass} | sudo kinit ${ad_user}
 
