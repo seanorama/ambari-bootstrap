@@ -15,8 +15,13 @@ ambari-configs
 defaultfs=$(${ambari_config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 realm=$(${ambari_config_get} kerberos-env | awk -F'"' '$2 == "realm" {print $4}' | head -1)
 
-#sudo sudo -u hdfs hadoop fs -mkdir -p /ranger/audit/hiveServer2
-#sudo sudo -u hdfs hadoop fs -chown hive /ranger/audit/hiveServer2
+if [ ! -f /etc/security/keytabs/hdfs.headless.keytab ]; then
+  echo
+else
+  sudo sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs-${ambari_cluster}@${realm}
+fi
+sudo sudo -u hdfs hadoop fs -mkdir -p /ranger/audit/hiveServer2
+sudo sudo -u hdfs hadoop fs -chown hive /ranger/audit/hiveServer2
 
 ## Ranger Hive Plugin
 ${ambari_config_set} ranger-hive-audit xasecure.audit.destination.db true
