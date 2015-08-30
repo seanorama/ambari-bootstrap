@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-if [ "${install_ambari_agent}" = true ]; then
 mypass=${mypass:-BadPass#1}
 
 # Set magic variables for current file & dir
