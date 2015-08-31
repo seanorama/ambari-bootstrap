@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
 
-## install Amabari Views with the JSON files in this directory
-##  this only works on non-kerberized clusters where all servers are on the same node
+## Install Ambari Views
+## - WARNING: This will delete existing views of the same type
+##
+## You'll need to update hadoop proxyuser settings for the views to work.
+## Or let the script do it:
+##   config_proxyuser=true ./create-views.sh
 
-# Set magic variables for current file & dir
+## overrides
+config_proxyuser="${config_proxyuser:-false}"
+
+########################################################################
+
+## Set magic variables for current file & dir
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
+##
 source ${__dir}/../ambari_functions.sh
 ambari-configs
 
+## Get Configs
 realm=$(${ambari_config_get} kerberos-env | awk -F'"' '$2 == "realm" {print $4}' | head -1)
 webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
 hive_port=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.server2.thrift.port" {print $4}' | head -1)
@@ -35,11 +46,17 @@ else
   hive_auth="auth=KERBEROS;principal=hive/${hive_host}@${realm}"
 fi
 
-${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.groups "users,hadoop-users"
-${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.hosts "*"
-${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.groups "users,hadoop-users"
-${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.hosts= "*"
+########################################################################
+## update update proxyuser config
+if [ "${config_proxyuser}" = true  ]; then
+  ${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.groups "users,hadoop-users"
+  ${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.hosts "*"
+  ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.groups "users,hadoop-users"
+  ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.hosts= "*"
+fi
 
+########################################################################
+## hdfs view
 read -r -d '' body <<EOF
 {
   "ViewInstanceInfo": {
@@ -56,6 +73,8 @@ EOF
 ${ambari_curl}/views/FILES/versions/1.0.0/instances/Files -X DELETE
 echo "${body}" | ${ambari_curl}/views/FILES/versions/1.0.0/instances/Files -X POST -d @-
 
+########################################################################
+## hive view
 read -r -d '' body <<EOF
 {
   "ViewInstanceInfo": {
@@ -81,6 +100,8 @@ EOF
 ${ambari_curl}/views/HIVE/versions/1.0.0/instances/Hive -X DELETE
 echo "${body}" | ${ambari_curl}/views/HIVE/versions/1.0.0/instances/Hive -X POST -d @-
 
+########################################################################
+## pig view
 read -r -d '' body <<EOF
 {
   "ViewInstanceInfo": {
