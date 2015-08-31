@@ -13,14 +13,6 @@ source ${__dir}/../ambari_functions.sh
 ambari-configs
 ambari-get-cluster
 
-####
-## Must run as root
-if [ "$(id -ru)" != 0 ]; then
-    printf >&2 'Error: this installer needs the ability to run commands as root.\n'
-    printf >&2 'Install as root or with sudo\n'
-    exit 1
-fi
-
 #keystore=/etc/ranger/admin/rangeradmin.jceks
 #xa_ldap_ad_bind_password="BadPass#1"
 #ad_password_alias=ranger.ad.binddn.password

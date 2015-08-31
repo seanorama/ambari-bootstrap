@@ -51,8 +51,4 @@ source ${__dir}/../ambari_functions.sh
 ambari-configs
 ambari_wait_request_complete 1
 
-sudo chkconfig mysqld on; sudo service mysqld start
-~/ambari-bootstrap/extras/add-trusted-ca.sh
-~/ambari-bootstrap/extras/samples/sample-data.sh
-~/ambari-bootstrap/extras/configs/proxyusers.sh
 
