@@ -21,8 +21,9 @@ install_ambari_agent="${install_ambari_agent:-true}"
 install_ambari_server="${install_ambari_server:-false}"
 iptables_disable="${iptables_disable:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
+java_version="${java_version:-7}"
 ambari_server="${ambari_server:-localhost}"
-ambari_version="${ambari_version:-2.1.0}"
+ambari_version="${ambari_version:-2.1.1}"
 ambari_version_major="${ambari_version_major:-$(echo ${ambari_version} | cut -c 1).x}"
 ##ambari_repo= ## if using a local repo. Otherwise the repo path is determined automatically in a line below.
 curl="curl -ksSL"
@@ -151,7 +152,7 @@ case "${lsb_dist}" in
 
         if [ "${java_provider}" != 'oracle' ]; then
             printf "## installing java\n"
-            yum install -y java-1.7.0-openjdk-devel
+            yum install -y java-1.${java_version}.0-openjdk-devel
             mkdir -p /usr/java
             ln -sf /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
