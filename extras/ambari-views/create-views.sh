@@ -23,17 +23,22 @@ webhcat_hostname=$(${ambari_curl}/clusters/${ambari_cluster}/services/HIVE/compo
     print json.load(sys.stdin)["host_components"][0]["HostRoles"]["host_name"]')
 webhcat_port=$(${ambari_config_get} webhcat-site | awk -F'"' '$2 == "templeton.port" {print $4}' | head -1)
 
+ambari_user=$(python -c 'from configobj import ConfigObj; \
+  config = ConfigObj("/etc/ambari-server/conf/ambari.properties"); \
+  print(config.get("ambari-server.user"))')
+
 if [ -z "${realm}"  ]; then
-  ${ambari_config_set} core-site hadoop.proxyuser.root.groups "users"
-  ${ambari_config_set} core-site hadoop.proxyuser.root.hosts "$(hostname -f)"
   webhdfs_auth=null
   hive_auth="auth=None"
 else
-  ${ambari_config_set} core-site hadoop.proxyuser.ambari.groups "users,hadoop-users"
-  ${ambari_config_set} core-site hadoop.proxyuser.ambari.hosts "$(hostname -f)"
-  webhdfs_auth='"auth=KERBEROS;proxyuser=ambari"'
-  hive_auth="auth=KERBEROS;principal=hive/$(hostname -f)@${realm}"
+  webhdfs_auth='"auth=KERBEROS;proxyuser='${ambari_user}'"'
+  hive_auth="auth=KERBEROS;principal=hive/${hive_host}@${realm}"
 fi
+
+${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.groups "users,hadoop-users"
+${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.hosts "*"
+${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.groups "users,hadoop-users"
+${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.hosts= "*"
 
 read -r -d '' body <<EOF
 {
