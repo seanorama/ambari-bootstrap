@@ -13,7 +13,6 @@ __base="$(basename ${__file} .sh)"
 test -f ${__dir}/.ambari.conf && source ${__dir}/.ambari.conf
 test -f ~/.ambari.conf && source ~/.ambari.conf
 
-
 ambari_user=${ambari_user:-admin}
 ambari_pass=${ambari_pass:-admin}
 ambari_protocol=${ambari_protocol:-http}
