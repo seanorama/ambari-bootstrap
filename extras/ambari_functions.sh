@@ -95,3 +95,13 @@ function ambari_wait_requests_completed() {
             'COMPLETED'
 }
 
+function ambari_wait_request_complete() {
+      ambari-get-cluster
+      # Poll for completion
+      ambari_wait "${ambari_curl}/clusters/${ambari_cluster}/requests/${1}" \
+            | grep request_status \
+            | uniq \
+            | tr -cd '[:upper:]'" \
+            'COMPLETED'
+}
+
