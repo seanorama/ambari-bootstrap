@@ -24,12 +24,11 @@ sudo usermod -a -G users ${USER}
 
 sudo install_ambari_server=true ${__dir}/../../ambari-bootstrap.sh
 
-${__dir}../../providers/google/public-hostname-gcloud.sh
+${__dir}/../../providers/google/public-hostname.sh
 sudo service ambari-agent restart
 sleep 15
 
-cd /opt/ambari-bootstrap/deploy
-
+cd ${__dir}/../../deploy/
 cat << EOF > configuration-custom.json
 {
   "configurations" : {
@@ -40,10 +39,11 @@ cat << EOF > configuration-custom.json
 }
 EOF
 
-export ambari_services=${ambari_services:-KNOX YARN ZOOKEEPER TEZ PIG SLIDER MAPREDUCE2 HIVE HDFS OOZIE FLUME SQOOP}
+export ambari_services=${ambari_services:-KNOX YARN ZOOKEEPER TEZ PIG SLIDER MAPREDUCE2 HIVE HDFS}
 export cluster_name=$(hostname -s)
 export host_count=skip
 ./deploy-recommended-cluster.bash
+cd
 
 sleep 30
 
@@ -56,4 +56,3 @@ ${__dir}/../add-trusted-ca.sh
 ${__dir}/../samples/sample-data.sh
 ${__dir}/../configs/proxyusers.sh
 
-exit
