@@ -10,19 +10,91 @@ __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
 source ${__dir}/../ambari_functions.sh
-
 ambari-configs
 
-## granting root super user rights
-#${ambari_config_set} core-site hadoop.proxyuser.root.groups "users"
-#${ambari_config_set} core-site hadoop.proxyuser.root.hosts "$(hostname -f)"
-
+realm=$(${ambari_config_get} kerberos-env | awk -F'"' '$2 == "realm" {print $4}' | head -1)
 webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
+hive_port=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.server2.thrift.port" {print $4}' | head -1)
+hive_host=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.metastore.uris" {print $4}' | head -1 | sed -e "s,^thrift://,," -e "s,:[0-9]*,,")
+yarn_ats_url=$(${ambari_config_get} yarn-site | awk -F'"' '$2 == "yarn.timeline-service.webapp.address" {print $4}' | head -1 )
+yarn_resourcemanager_url=$(${ambari_config_get} yarn-site | awk -F'"' '$2 == "yarn.resourcemanager.webapp.address" {print $4}' | head -1 )
+webhcat_hostname=$(${ambari_curl}/clusters/${ambari_cluster}/services/HIVE/components/HCAT?fields=host_components/HostRoles/host_name\&minimal_response=true \
+    | python -c 'import sys,json; \
+    print json.load(sys.stdin)["host_components"][0]["HostRoles"]["host_name"]')
+webhcat_port=$(${ambari_config_get} webhcat-site | awk -F'"' '$2 == "templeton.port" {print $4}' | head -1)
 
-## install views
-views="hive files pig"
-for view in ${views}; do
-  sed -e "s,webhdfs://.*:50070,webhdfs://${webhdfs}," ${__dir}/${view}.json > /tmp/ambari-view-${view}.json
-  ${ambari_curl}/views/${view^^}/versions/1.0.0/instances/${view~} \
-    -v -X POST -d @/tmp/ambari-view-${view}.json
-done
+if [ -z "${realm}"  ]; then
+  ${ambari_config_set} core-site hadoop.proxyuser.root.groups "users"
+  ${ambari_config_set} core-site hadoop.proxyuser.root.hosts "$(hostname -f)"
+  webhdfs_auth=null
+  hive_auth="auth=None"
+else
+  ${ambari_config_set} core-site hadoop.proxyuser.ambari.groups "users,hadoop-users"
+  ${ambari_config_set} core-site hadoop.proxyuser.ambari.hosts "$(hostname -f)"
+  webhdfs_auth='"auth=KERBEROS;proxyuser=ambari"'
+  hive_auth="auth=KERBEROS;principal=hive/$(hostname -f)@${realm}"
+fi
+
+read -r -d '' body <<EOF
+{
+  "ViewInstanceInfo": {
+    "instance_name": "Files", "label": "Files", "description": "Files",
+    "visible": true,
+    "properties": {
+      "webhdfs.username": "\${username}",
+      "webhdfs.auth": ${webhdfs_auth},
+      "webhdfs.url": "webhdfs://${webhdfs}"
+    }
+  }
+}
+EOF
+${ambari_curl}/views/FILES/versions/1.0.0/instances/Files -X DELETE
+echo "${body}" | ${ambari_curl}/views/FILES/versions/1.0.0/instances/Files -X POST -d @-
+
+read -r -d '' body <<EOF
+{
+  "ViewInstanceInfo": {
+    "instance_name": "Hive", "label": "Hive", "description": "Hive",
+    "visible": true,
+    "properties": {
+      "webhdfs.username": "\${username}",
+      "webhdfs.auth": ${webhdfs_auth},
+      "webhdfs.url": "webhdfs://${webhdfs}",
+      "hive.auth": "${hive_auth}",
+      "scripts.dir": "/user/\${username}/hive/scripts",
+      "jobs.dir": "/user/\${username}/hive/jobs",
+      "scripts.settings.defaults-file": "/user/\${username}/.\${instanceName}.defaultSettings",
+      "hive.host": "${hive_host}",
+      "hive.port": "${hive_port}",
+      "views.tez.instance": "TEZ_CLUSTER_INSTANCE",
+      "yarn.ats.url": "http://${yarn_ats_url}",
+      "yarn.resourcemanager.url": "http://${yarn_resourcemanager_url}"
+    }
+  }
+}
+EOF
+${ambari_curl}/views/HIVE/versions/1.0.0/instances/Hive -X DELETE
+echo "${body}" | ${ambari_curl}/views/HIVE/versions/1.0.0/instances/Hive -X POST -d @-
+
+read -r -d '' body <<EOF
+{
+  "ViewInstanceInfo": {
+    "instance_name": "Pig", "label": "Pig", "description": "Pig",
+    "visible": true,
+    "properties": {
+      "webhdfs.username": "\${username}",
+      "webhdfs.auth": ${webhdfs_auth},
+      "webhdfs.url": "webhdfs://${webhdfs}",
+      "scripts.dir": "/user/\${username}/pig/scripts",
+      "jobs.dir": "/user/\${username}/pig/jobs",
+      "webhcat.username": "\${username}",
+      "webhcat.hostname": "${webhcat_hostname}",
+      "webhcat.port": "${webhcat_port}"
+    }
+  }
+}
+EOF
+url="${ambari_curl}/views/PIG/versions/1.0.0/instances/Pig"
+${url} -X DELETE
+echo "${body}" | ${url} -X POST -d @-
+
