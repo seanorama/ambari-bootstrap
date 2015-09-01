@@ -86,6 +86,7 @@ access_provider = ad
 ad_server = ${ad_dc}
 #ldap_user_principal = nosuchattribute
 #ldap_search_base = ${ad_root}
+ldap_schema = rfc2307bis
 EOF
 sudo chmod 0600 /etc/sssd/sssd.conf
 
