@@ -32,6 +32,7 @@ ad_ou="${ad_ou:-ou=lab01,ou=labs,${ad_root}}"
 sudo yum makecache
 sudo yum -y install epel-release ## epel is required for adcli
 sudo yum -y install sssd oddjob-mkhomedir authconfig sssd-krb5 sssd-ad sssd-tools libnss-sss libpam-sss openldap-clients
+
 sudo yum -y install adcli
 
 ## LDAP configuration to use the systems PKI and a default LDAP server
@@ -80,11 +81,11 @@ domains = ${ad_realm}
 override_space = _
 [domain/${ad_realm}]
 id_provider = ad
-acess_provider = ad
+access_provider = ad
 ## ad_server is not needed when the DC is managing DNS, so can be discovered
 ad_server = ${ad_dc}
-ldap_user_principal = nosuchattribute
-ldap_search_base = ${ad_root}
+#ldap_user_principal = nosuchattribute
+#ldap_search_base = ${ad_root}
 EOF
 sudo chmod 0600 /etc/sssd/sssd.conf
 
