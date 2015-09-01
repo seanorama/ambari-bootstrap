@@ -49,7 +49,7 @@ ${ambari_config_set} hive-site hive.security.authorization.manager "org.apache.h
 #${ambari_config_set} hive-site hive.security.metastore.authorization.manager "org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider"
 ${ambari_config_set} hive-site hive.security.authorization.enabled true
 ${ambari_config_set} hive-site hive.server2.enable.doAs false
-#hive_conf_restricted_list=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.conf.restricted.list" {print $4}' | head -1)
-#${ambari_config_set} hive-site hive.conf.restricted.list "${hive_conf_restricted_list},hive.security.authorization.enabled"
+hive_conf_restricted_list=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.conf.restricted.list" {print $4}' | head -1)
+${ambari_config_set} hive-site hive.conf.restricted.list "${hive_conf_restricted_list},hive.security.authorization.enabled"
 
 ${ambari_config_set} hive-env hive_security_authorization Ranger
