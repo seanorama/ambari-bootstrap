@@ -83,8 +83,8 @@ id_provider = ad
 acess_provider = ad
 ## ad_server is not needed when the DC is managing DNS, so can be discovered
 ad_server = ${ad_dc}
-#ldap_user_principal = nosuchattribute
-#ldap_search_base = ${ad_root}
+ldap_user_principal = nosuchattribute
+ldap_search_base = ${ad_root}
 EOF
 sudo chmod 0600 /etc/sssd/sssd.conf
 
