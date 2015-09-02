@@ -4,12 +4,10 @@ mypass=${mypass:-BadPass#1}
 
 # Set magic variables for current file & dir
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
 source ${__dir}/../ambari_functions.sh
-
 ambari-configs
 
 webhdfs=$(${ambari_config_get} hdfs-site | awk -F'"' '$2 == "dfs.namenode.http-address" {print $4}' | head -1)
@@ -41,10 +39,11 @@ ${ambari_config_set} kms-site hadoop.kms.proxyuser.rangeradmin.groups "users, ha
 
 ${ambari_config_set} ranger-kms-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-kms-audit xasecure.audit.destination.hdfs true
+${ambari_config_set} ranger-kms-audit xasecure.audit.destination.solr true
 ${ambari_config_set} ranger-kms-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
-${ambari_config_set} ranger-kms-audit xasecure.audit.destination.solr flase
 ${ambari_config_set} ranger-kms-audit xasecure.audit.provider.summary.enabled true
-
+${ambari_config_set} kms-properties common.name.for.certificate " "
+${ambari_config_set} kms-properties hadoop.rpc.protection " "
 if [ -z "${realm}" ]; then
   echo
 else
@@ -53,6 +52,4 @@ else
   ${ambari_config_set} kms policy_user "rangeradmin"
 fi
 
-${ambari_config_set} kms-properties common.name.for.certificate " "
-${ambari_config_set} kms-properties hadoop.rpc.protection " "
 ${ambari_config_set} ranger-kms-audit xasecure.audit.is.enabled true
