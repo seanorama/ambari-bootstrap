@@ -25,6 +25,7 @@ sudo sudo -u hdfs hadoop fs -chown yarn /ranger/audit/yarn
 ## Ranger YARN Plugin
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.hdfs true
+${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.solr true
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.provider.summary.enabled true
 ${ambari_config_set} ranger-yarn-audit xasecure.audit.is.enabled true
