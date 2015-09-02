@@ -81,12 +81,12 @@ domains = ${ad_realm}
 override_space = _
 [domain/${ad_realm}]
 id_provider = ad
+auth_provider = ad
+chpass_provider = ad
 access_provider = ad
 ## ad_server is not needed when the DC is managing DNS, so can be discovered
 ad_server = ${ad_dc}
-#ldap_user_principal = nosuchattribute
-#ldap_search_base = ${ad_root}
-#ldap_schema = rfc2307bis
+cache_credentials = true
 EOF
 sudo chmod 0600 /etc/sssd/sssd.conf
 
