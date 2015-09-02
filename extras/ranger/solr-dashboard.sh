@@ -115,5 +115,6 @@ cd rangeraudits-view
 sudo mvn clean package
 sudo cp target/*.jar /var/lib/ambari-server/resources/views
 sudo service ambari-server restart
+sudo service ambari-agent restart
 sleep 10
 
