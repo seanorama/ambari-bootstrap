@@ -47,9 +47,8 @@ ${ambari_config_set} kms-properties hadoop.rpc.protection " "
 if [ -z "${realm}" ]; then
   echo
 else
-  ${ambari_config_set} kms-properties REPOSITORY_CONFIG_USERNAME "rangeradmin@${realm}"
+  ${ambari_config_set} kms-properties REPOSITORY_CONFIG_USERNAME "keyadmin@${realm}"
   ${ambari_config_set} kms-properties REPOSITORY_CONFIG_PASSWORD "${mypass}"
-  ${ambari_config_set} kms policy_user "rangeradmin"
 fi
 
 ${ambari_config_set} ranger-kms-audit xasecure.audit.is.enabled true
