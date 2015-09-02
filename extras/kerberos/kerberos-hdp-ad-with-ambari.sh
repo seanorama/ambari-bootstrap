@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-## messy automation of Ambari's Kerberos wizard for Active Directory
-## Tested with Ambari 2.1.[0,1] & HDP 2.3.0 & CentOS6
+##
+## Messy automation:
+##   Enable Kerberos for HDP using Ambari's Kerberos API
+##
+## Tested with Ambari 2.1.(0|1) & HDP 2.3.0 & CentOS 6.7
+##
 
-## update these or export in your shell environment for executing the script
-
+########################################################################
+## Config: Update or `export` in your shell environment before executing the script
 ad_pass=${ad_pass:-BadPass#1}
 ad_user=${ad_user:-lab01admin} ## this is your admin user
 realm=${realm:-HORTONWORKS.COM}
