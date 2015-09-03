@@ -2,13 +2,13 @@
 
 # Set magic variables for current file & dir
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
+source ${__dir}/../ambari_functions.sh
+ambari-configs
 
-${__dir}/../ambari-views/create-views.sh
-
-${__dir}/../onboarding.sh
+${__dir}/ambari-views/create-views.sh
+${__dir}/onboarding.sh
 
 sudo mkdir -p /opt/hadoop/samples
 sudo chmod 777 /opt/hadoop/samples
