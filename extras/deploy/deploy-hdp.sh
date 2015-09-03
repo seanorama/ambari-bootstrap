@@ -3,6 +3,7 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
+source ${__dir}/../ambari_functions.sh
 
 ## get mysql community on el/centos7
 el_version=$(sed 's/^.\+ release \([.0-9]\+\).*/\1/' /etc/redhat-release | cut -d. -f1)
@@ -21,13 +22,13 @@ sudo yum -y install jq python-argparse python-configobj
 
 sudo usermod -a -G users ${USER}
 
-sudo install_ambari_server=true ${__dir}/../../ambari-bootstrap.sh
+sudo install_ambari_server=true ${__dir}/../ambari-bootstrap.sh
 
-${__dir}/../../providers/google/public-hostname.sh
+${__dir}/../providers/google/public-hostname.sh
 sudo service ambari-agent restart
 sleep 15
 
-cd ${__dir}/../../deploy/
+cd ${__dir}/../deploy/
 cat << EOF > configuration-custom.json
 {
   "configurations" : {
@@ -48,8 +49,7 @@ cd
 
 sleep 30
 
-source ${__dir}/../ambari_functions.sh
+source ${__dir}/ambari_functions.sh
 ambari-configs
 ambari_wait_request_complete 1
-
 
