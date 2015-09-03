@@ -22,7 +22,7 @@ sudo yum -y install jq python-argparse python-configobj
 
 sudo usermod -a -G users ${USER}
 
-sudo install_ambari_server=true ${__dir}/../ambari-bootstrap.sh
+sudo java_version=8 install_ambari_server=true ${__dir}/../ambari-bootstrap.sh
 
 ${__dir}/../providers/google/public-hostname.sh
 sudo service ambari-agent restart
@@ -40,7 +40,6 @@ cat << EOF > configuration-custom.json
 EOF
 
 #export ambari_services=${ambari_services:-KNOX YARN ZOOKEEPER TEZ PIG SLIDER MAPREDUCE2 HIVE HDFS}
-export java_version=8
 export ambari_services=${ambari_services}
 export cluster_name=$(hostname -s)
 export host_count=skip
@@ -49,7 +48,6 @@ cd
 
 sleep 30
 
-source ${__dir}/ambari_functions.sh
+source ../extras/ambari_functions.sh
 ambari-configs
 ambari_wait_request_complete 1
-
