@@ -19,17 +19,17 @@ ambari-configs
 #source ~/ambari-bootstrap/extras/ambari_functions.sh; ambari-change-pass admin admin BadPass#1
 #echo export ambari_pass=BadPass#1 > ~/.ambari.conf; chmod 600 ~/.ambari.conf
 
-${__dir}/add-trusted-ca.sh
-exit
-
-${__dir}/onboarding.sh
-#${__dir}/../samples/sample-data.sh
-${__dir}/../configs/proxyusers.sh
-proxyusers="oozie falcon" ${__dir}/../configs/proxyusers.sh
-${__dir}/../oozie/replace-mysql-connector.sh
-${__dir}/../atlas/atlas-hive-enable.sh
-config_proxyuser=true ${__dir}/../ambari-views/create-views.sh
-
 ${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.groups "*"
 ${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.hosts "*"
 ${ambari_config_set} oozie-site   oozie.service.AuthorizationService.security.enabled "false"
+
+#${__dir}/add-trusted-ca.sh
+
+${__dir}/onboarding.sh
+#${__dir}/../samples/sample-data.sh
+${__dir}/configs/proxyusers.sh
+proxyusers="oozie falcon" ${__dir}/configs/proxyusers.sh
+${__dir}/oozie/replace-mysql-connector.sh
+${__dir}/atlas/atlas-hive-enable.sh
+config_proxyuser=true ${__dir}/ambari-views/create-views.sh
+
