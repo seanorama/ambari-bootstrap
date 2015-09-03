@@ -39,6 +39,7 @@ cat << EOF > configuration-custom.json
 EOF
 
 #export ambari_services=${ambari_services:-KNOX YARN ZOOKEEPER TEZ PIG SLIDER MAPREDUCE2 HIVE HDFS}
+export java_version=8
 export ambari_services=${ambari_services}
 export cluster_name=$(hostname -s)
 export host_count=skip
