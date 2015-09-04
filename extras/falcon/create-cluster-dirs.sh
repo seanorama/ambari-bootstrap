@@ -20,9 +20,8 @@ else
   sudo sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs-${ambari_cluster}@${realm}
 fi
 
-clusterDirs="${clusterDirs:-staging working}"
-for dir in ${clusterDirs}; do
-    sudo sudo -u hdfs hadoop fs -mkdir -p /apps/falcon/${clusterName}/${dir}
-    sudo sudo -u hdfs hadoop fs -chmod 755 /apps/falcon/${clusterName}/${dir}
-    sudo sudo -u hdfs hadoop fs -chown falcon:hadoop /apps/falcon/${clusterName}/${dir}
-done
+sudo sudo -u hdfs hadoop fs -mkdir -p /apps/falcon/${clusterName}/staging /apps/falcon/${clusterName}/working
+sudo sudo -u hdfs hadoop fs -chmod    777 /apps/falcon/${clusterName}/staging
+sudo sudo -u hdfs hadoop fs -chmod    755 /apps/falcon/${clusterName}/working
+sudo sudo -u hdfs hadoop fs -chown -R falcon:hadoop /apps/falcon/${clusterName}
+
