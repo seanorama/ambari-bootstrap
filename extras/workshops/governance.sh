@@ -6,10 +6,11 @@ __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 source ${__dir}/../ambari_functions.sh
 
-"${__dir}/deploy/prep-hosts.sh"
+${__dir}/deploy/prep-hosts.sh
 
 export ambari_services="YARN ZOOKEEPER TEZ OOZIE FLUME PIG SLIDER MAPREDUCE2 HIVE HDFS FALCON ATLAS SQOOP"
 "${__dir}/deploy/deploy-hdp.sh"
+
 
 source ${__dir}/ambari_functions.sh
 ambari-configs
@@ -21,20 +22,22 @@ echo export ambari_pass=BadPass#1 > ~/ambari-bootstrap/extras/.ambari.conf; chmo
 
 source ${__dir}/ambari_functions.sh
 ambari-configs
-${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.groups "*"
-${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.hosts "*"
-${ambari_config_set} oozie-site   oozie.service.AuthorizationService.security.enabled "false"
+
+#${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.groups "*"
+#${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.hosts "*"
+#${ambari_config_set} oozie-site   oozie.service.AuthorizationService.security.enabled "false"
 
 sudo mkdir -p /app; sudo chown ${USER}:users /app; sudo chmod g+wx /app
 
 ${__dir}/add-trusted-ca.sh
 ${__dir}/onboarding.sh
-#${__dir}/samples/sample-data.sh
-${__dir}/configs/proxyusers.sh
-proxyusers="oozie falcon" ${__dir}/configs/proxyusers.sh
-${__dir}/oozie/replace-mysql-connector.sh
+#exclude this one #${__dir}/samples/sample-data.sh
+#${__dir}/configs/proxyusers.sh
+#proxyusers="oozie falcon" ${__dir}/configs/proxyusers.sh
+#${__dir}/oozie/replace-mysql-connector.sh
 config_proxyuser=true ${__dir}/ambari-views/create-views.sh
 ${__dir}/atlas/atlas-hive-enable.sh
+proxyusers="falcon" ${__dir}/oozie/proxyusers.sh
 
 ## restart services
 myhost=$(hostname -f)
