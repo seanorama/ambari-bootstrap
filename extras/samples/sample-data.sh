@@ -7,9 +7,6 @@ __base="$(basename ${__file} .sh)"
 source ${__dir}/../ambari_functions.sh
 ambari-configs
 
-${__dir}/ambari-views/create-views.sh
-${__dir}/onboarding.sh
-
 sudo mkdir -p /opt/hadoop/samples
 sudo chmod 777 /opt/hadoop/samples
 cd /opt/hadoop/samples

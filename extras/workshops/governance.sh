@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+## for prepping a 1-node cluster for the governance masterclass
+
 ## magic, don't touch
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
@@ -11,15 +13,12 @@ ${__dir}/deploy/prep-hosts.sh
 export ambari_services="YARN ZOOKEEPER TEZ OOZIE FLUME PIG SLIDER MAPREDUCE2 HIVE HDFS FALCON ATLAS SQOOP"
 "${__dir}/deploy/deploy-hdp.sh"
 
-
 source ${__dir}/ambari_functions.sh
 ambari-configs
 sudo chkconfig mysqld on; sudo service mysqld start
-
 source ~/ambari-bootstrap/extras/ambari_functions.sh; ambari-change-pass admin admin BadPass#1
 echo export ambari_pass=BadPass#1 > ~/.ambari.conf; chmod 600 ~/.ambari.conf
 echo export ambari_pass=BadPass#1 > ~/ambari-bootstrap/extras/.ambari.conf; chmod 660 ~/ambari-bootstrap/extras/.ambari.conf
-
 source ${__dir}/ambari_functions.sh
 ambari-configs
 
@@ -27,8 +26,8 @@ ambari-configs
 #${ambari_config_set} webhcat-site webhcat.proxyuser.oozie.hosts "*"
 #${ambari_config_set} oozie-site   oozie.service.AuthorizationService.security.enabled "false"
 
-sudo mkdir -p /app; sudo chown ${USER}:users /app; sudo chmod g+wx /app
 
+sudo mkdir -p /app; sudo chown ${USER}:users /app; sudo chmod g+wx /app
 ${__dir}/add-trusted-ca.sh
 ${__dir}/onboarding.sh
 #exclude this one #${__dir}/samples/sample-data.sh
