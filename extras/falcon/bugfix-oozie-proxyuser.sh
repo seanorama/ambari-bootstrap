@@ -8,5 +8,5 @@ source ${__dir}/../ambari_functions.sh
 
 ambari-configs
 
-${ambari_config_set} oozie.service.ProxyUserService.proxyuser.falcon.groups "users,hadoop-users"
-${ambari_config_set} oozie.service.ProxyUserService.proxyuser.falcon.hosts "*"
+${ambari_config_set} oozie-site oozie.service.ProxyUserService.proxyuser.falcon.groups "users,hadoop-users"
+${ambari_config_set} oozie-site oozie.service.ProxyUserService.proxyuser.falcon.hosts "*"
