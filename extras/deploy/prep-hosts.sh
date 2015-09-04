@@ -8,8 +8,8 @@ ad_host_ip=$(ping -w 1 ${ad_host} | awk 'NR==1 {print $3}' | sed 's/[()]//g')
 echo "${ad_host_ip} activedirectory.hortonworks.com ${ad_host} activedirectory" | sudo tee -a /etc/hosts
 
 sudo yum makecache
-sudo yum -y install git epel-release screen ntpd mlocate python-configobj
-sudo yum -y install shellinabox mosh tmux ack jq python-argparse
+sudo yum -y -q install git epel-release screen ntpd mlocate python-configobj
+sudo yum -y -q install shellinabox mosh tmux ack jq python-argparse
 
 sudo chkconfig ntpd on
 sudo service ntpd restart

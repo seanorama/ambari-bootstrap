@@ -17,8 +17,8 @@ case ${el_version} in
 esac
 
 sudo yum makecache
-sudo yum -y install git epel-release ntpd
-sudo yum -y install jq python-argparse python-configobj
+sudo yum -y -q install git epel-release ntpd
+sudo yum -y -q install jq python-argparse python-configobj
 
 sudo usermod -a -G users ${USER}
 

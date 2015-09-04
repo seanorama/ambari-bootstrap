@@ -124,7 +124,7 @@ case "${lsb_dist}" in
             my_disable_ipv6
 
             printf "## Info: Installing base packages\n"
-            yum install -y curl ntp openssl python zlib wget unzip openssh-clients
+            yum install -y -q curl ntp openssl python zlib wget unzip openssh-clients
 
             printf "## Info: Fixing sudo to not requiretty. This is the default in newer distributions\n"
             printf 'Defaults !requiretty\n' > /etc/sudoers.d/888-dont-requiretty
@@ -152,7 +152,7 @@ case "${lsb_dist}" in
 
         if [ "${java_provider}" != 'oracle' ]; then
             printf "## installing java\n"
-            yum install -y java-1.${java_version}.0-openjdk-devel
+            yum install -q -y java-1.${java_version}.0-openjdk-devel
             mkdir -p /usr/java
             ln -sf /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
@@ -164,7 +164,7 @@ case "${lsb_dist}" in
 
         if [ "${install_ambari_agent}" = true ]; then
             printf "## installing ambari-agent\n"
-            yum install -y ambari-agent
+            yum install -q -y ambari-agent
             sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
                 /etc/ambari-agent/conf/ambari-agent.ini
             chkconfig ambari-agent on
@@ -172,7 +172,7 @@ case "${lsb_dist}" in
         fi
         if [ "${install_ambari_server}" = true ]; then
             printf "## install ambari-server\n"
-            yum install -y ambari-server
+            yum install -q -y ambari-server
             if [ "${java_provider}" = 'oracle' ]; then
                 ambari-server setup -s
             else

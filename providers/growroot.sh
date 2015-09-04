@@ -6,7 +6,7 @@
 #
 
 yum makecache fast
-yum -y install epel-release
-yum -y install cloud-init cloud-initramfs-tools dracut-modules-growroot cloud-utils-growpart
+yum -y -q install epel-release
+yum -y -q install cloud-init cloud-initramfs-tools dracut-modules-growroot cloud-utils-growpart
 rpm -qa kernel | sed -e 's/^kernel-//' | xargs -I {} dracut -f /boot/initramfs-{}.img {}
 

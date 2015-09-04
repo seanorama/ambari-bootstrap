@@ -3,7 +3,7 @@
 mypass="${mypass:-BadPass#1"}
 db_root_password="${mypass}"
 
-sudo yum -y install mysql-server mysql-connector-java
+sudo yum -y -q install mysql-server mysql-connector-java
 sudo chkconfig mysqld on
 sudo service mysqld start
 
