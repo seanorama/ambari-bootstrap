@@ -48,8 +48,8 @@ function main() {
     gcloud compute config-ssh
     sleep 120
     read -r -d '' command <<EOF
-sed -i.bak "s/^\(inet_protocols = \)all/\1ipv4/" /etc/postfix/main.cf; sudo service postfix restart
-command="curl -sSL https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/providers/growroot.sh | sudo bash; sudo reboot
+sudo sed -i.bak "s/^\(inet_protocols = \)all/\1ipv4/" /etc/postfix/main.cf; sudo service postfix restart
+curl -sSL https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/providers/growroot.sh | sudo bash; sudo reboot
 EOF
     pdsh -w ${hosts_all} "${command}"
   else
