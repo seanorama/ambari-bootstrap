@@ -2,7 +2,7 @@
 
 ## creates the dirs required for adding a Falcon cluster
 
-clusterName="${clusterName:-primaryCluster}"
+clusterName="${clusterName:-clusterName}"
 
 ########################################################################
 
@@ -21,7 +21,7 @@ else
 fi
 
 for dir in "staging working"; do
-    sudo sudo -u hdfs hadoop fs -mkdir -p /apps/falcon/clusterName/${dir}
-    sudo sudo -u hdfs hadoop fs -chmod 755 /apps/falcon/clusterName/${dir}
-    sudo sudo -u hdfs hadoop fs -chown falcon:hadoop /apps/falcon/clusterName/${dir}
+    sudo sudo -u hdfs hadoop fs -mkdir -p /apps/falcon/${clusterName}/${dir}
+    sudo sudo -u hdfs hadoop fs -chmod 755 /apps/falcon/${clusterName}/${dir}
+    sudo sudo -u hdfs hadoop fs -chown falcon:hadoop /apps/falcon/${clusterName}/${dir}
 done
