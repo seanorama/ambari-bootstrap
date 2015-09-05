@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mypass="${mypass:-BadPass#1"}
+mypass="${mypass:-BadPass#1}"
 db_root_password="${mypass}"
 
 sudo yum -y -q install mysql-server mysql-connector-java
