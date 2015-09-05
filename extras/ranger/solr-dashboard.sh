@@ -96,6 +96,8 @@ sudo cp -f $banana_home/latest/jetty-contexts/banana-context.xml $solr_home/serv
 
 #####Restart Solr#######
 sudo $solr_home/ranger_audit_server/scripts/start_solr.sh
+sudo sed -i.bak -e "s/\(SOLR_RANGER_HOME\)$/\1 -c -z $(hostname -f):2181/" ${solr_home}/ranger_audit_server/scripts/start_solr.sh
+printf "\n$solr_home/ranger_audit_server/scripts/start_solr.sh\n\n" | sudo tee -a /etc/rc.local
 
 #####Setup iFrame view to open Banana webui in Ambari#######
 
@@ -117,4 +119,3 @@ sudo cp target/*.jar /var/lib/ambari-server/resources/views
 sudo service ambari-server restart
 sudo service ambari-agent restart
 sleep 10
-
