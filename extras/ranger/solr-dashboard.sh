@@ -59,7 +59,7 @@ echo "SOLR_INSTALL=false" > install.properties
 echo "SOLR_INSTALL_FOLDER=/opt/lucidworks-hdpsearch/solr" >> install.properties   
 echo "SOLR_RANGER_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server" >> install.properties   
 echo "SOLR_RANGER_DATA_FOLDER=/opt/lucidworks-hdpsearch/solr/ranger_audit_server/data" >> install.properties   
-echo "SOLR_RANGER_PORT=6083" >> install.properties   
+echo "SOLR_RANGER_PORT=8983" >> install.properties   
 echo "SOLR_MAX_MEM=512m" >> install.properties
 
 sudo ./setup.sh
@@ -94,10 +94,26 @@ sudo ant
 sudo cp -f $banana_home/latest/build/banana*.war $solr_home/server/webapps/banana.war
 sudo cp -f $banana_home/latest/jetty-contexts/banana-context.xml $solr_home/server/contexts/
 
+sudo tee -a /opt/lucidworks-hdpsearch/solr/bin/solr.in.sh << EOF
+#SOLR_MEMORY=512m
+ZK_HOST="$(hostname -f):2181"
+SOLR_RANGER_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server
+SOLR_HOME=${SOLR_RANGER_HOME}
+SOLR_PORT=8983
+SOLR_MODE=solrcloud
+EOF
+
+sudo chown -R solr /opt/lucidworks-hdpsearch/solr/
+sudo chkconfig --add solr
+sudo chkconfig solr on
+sudo service solr restart
+
 #####Restart Solr#######
-sudo $solr_home/ranger_audit_server/scripts/start_solr.sh
-sudo sed -i.bak -e "s/\(SOLR_RANGER_HOME\)$/\1 -c -z $(hostname -f):2181/" ${solr_home}/ranger_audit_server/scripts/start_solr.sh
-printf "\n$solr_home/ranger_audit_server/scripts/start_solr.sh\n\n" | sudo tee -a /etc/rc.local
+#sudo $solr_home/ranger_audit_server/scripts/start_solr.sh
+#sudo sed -i.bak -e "s/\(SOLR_RANGER_HOME\)$/\1 -c -z $(hostname -f):2181/" ${solr_home}/ranger_audit_server/scripts/start_solr.sh
+#printf "\n$solr_home/ranger_audit_server/scripts/start_solr.sh\n\n" | sudo tee -a /etc/rc.local
+
+
 
 #####Setup iFrame view to open Banana webui in Ambari#######
 
@@ -109,7 +125,7 @@ cd /tmp
 sudo git clone https://github.com/abajwa-hw/iframe-view.git
 sudo sed -i.bak -e "s/iFrame View/Ranger Audits/g" \
     -e "s/IFRAME_VIEW/RANGER_AUDITS/g" iframe-view/src/main/resources/view.xml
-sudo sed -i.bak -e "s#sandbox.hortonworks.com:6080#$host:6083/banana#g" iframe-view/src/main/resources/index.html	
+sudo sed -i.bak -e "s#sandbox.hortonworks.com:6080#$host:8983/banana#g" iframe-view/src/main/resources/index.html
 sudo sed -i.bak -e "s/iframe-view/rangeraudits-view/g" \
     -e "s/Ambari iFrame View/Ranger Audits View/g" iframe-view/pom.xml	
 sudo mv iframe-view rangeraudits-view
