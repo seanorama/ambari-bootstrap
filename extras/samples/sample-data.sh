@@ -44,7 +44,7 @@ EOF
 beeline -n student -u jdbc:hive2://$(hostname -f):10000/default -f sample-populate.sql
 
 ## Trucking demo data sets
-curl -sSL -O https://raw.githubusercontent.com/seanorama/masterclass/master/data/Geolocation.zip
+curl -sSL -O https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/extras/samples/Geolocation.zip
 unzip Geolocation.zip
 ${dfs_cmd_admin} -put geolocation.csv trucks.csv /public/samples
 
