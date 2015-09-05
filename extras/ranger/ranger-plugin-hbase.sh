@@ -26,7 +26,7 @@ sudo sudo -u hdfs hadoop fs -chown hbase /ranger/audit/hbaseMaster
 ## Ranger HBase Plugin
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.hdfs true
-${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.solr false
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.provider.summary.enabled true
 ${ambari_config_set} ranger-hbase-audit xasecure.audit.is.enabled true

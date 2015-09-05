@@ -97,11 +97,11 @@ sudo cp -f $banana_home/latest/jetty-contexts/banana-context.xml $solr_home/serv
 
 sudo tee -a /opt/lucidworks-hdpsearch/solr/bin/solr.in.sh << EOF
 #SOLR_MEMORY=512m
-ZK_HOST="$(hostname -f):2181"
+#ZK_HOST="$(hostname -f):2181"
 SOLR_RANGER_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server
 SOLR_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server
 SOLR_PORT=${SOLR_RANGER_PORT}
-SOLR_MODE=solrcloud
+#SOLR_MODE=solrcloud
 EOF
 
 sudo chown -R solr /opt/lucidworks-hdpsearch/solr/
@@ -126,13 +126,15 @@ cd /tmp
 git clone https://github.com/abajwa-hw/iframe-view.git
 sed -i.bak -e "s/iFrame View/Ranger Audits/g" \
     -e "s/IFRAME_VIEW/RANGER_AUDITS/g" iframe-view/src/main/resources/view.xml
-sed -i.bak -e "s#sandbox.hortonworks.com:6080#$host:${SOLR_RANGER_PORT}/banana#g" iframe-view/src/main/resources/index.html
+sed -i.bak -e "s,sandbox.hortonworks.com:6080,${host}:${SOLR_RANGER_PORT}/banana,g" iframe-view/src/main/resources/index.html
 sed -i.bak -e "s/iframe-view/rangeraudits-view/g" \
     -e "s/Ambari iFrame View/Ranger Audits View/g" iframe-view/pom.xml
 mv iframe-view rangeraudits-view
 cd rangeraudits-view
 mvn clean package
 sudo cp target/*.jar /var/lib/ambari-server/resources/views
-sudo service ambari-server restart
-sudo service ambari-agent restart
-sleep 10
+#sudo service ambari-server restart
+#sudo service ambari-agent restart
+#sleep 10
+echo 
+echo ## Ambari will need to be restarted for the Ambari View to be available

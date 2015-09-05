@@ -17,7 +17,7 @@ realm=$(${ambari_config_get} kerberos-env | awk -F'"' '$2 == "realm" {print $4}'
 ## Ranger HDFS Plugin
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.db true
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.hdfs true
-${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.solr false
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.hdfs.dir "${defaultfs}/ranger/audit"
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.is.enabled true
 ${ambari_config_set} ranger-hdfs-audit xasecure.audit.provider.summary.enabled true
