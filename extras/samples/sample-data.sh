@@ -12,16 +12,16 @@ sudo chmod 777 /opt/hadoop/samples
 cd /opt/hadoop/samples
 
 dfs_cmd="sudo sudo -u hdfs hadoop fs"
+dfs_cmd_admin="sudo sudo -u admin hadoop fs"
 
 ${dfs_cmd} -mkdir /public
-${dfs_cmd} -chmod 777 /public
-${dfs_cmd} -mkdir -p /public/samples
-${dfs_cmd} -mkdir -p /public/secured/dir1
+${dfs_cmd} -mkdir -p /public/samples /public/secured/dir1
+${dfs_cmd} -chmod -R 777 /public
 
 ## Sandbox data sets
 curl -sSL -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_07.csv
 curl -sSL -O https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/data/sample_08.csv
-${dfs_cmd} -put sample_07.csv sample_08.csv /public/samples
+${dfs_cmd_admin} -put sample_07.csv sample_08.csv /public/samples
 
 cat > sample-populate.sql <<-'EOF'
 CREATE TABLE `sample_07` (
@@ -46,7 +46,7 @@ beeline -n student -u jdbc:hive2://$(hostname -f):10000/default -f sample-popula
 ## Trucking demo data sets
 curl -sSL -O https://raw.githubusercontent.com/seanorama/masterclass/master/data/Geolocation.zip
 unzip Geolocation.zip
-${dfs_cmd} -put geolocation.csv trucks.csv /public/samples
+${dfs_cmd_admin} -put geolocation.csv trucks.csv /public/samples
 
 ## Trucking demo tables
 cat > trucking.sql <<-'EOF'
