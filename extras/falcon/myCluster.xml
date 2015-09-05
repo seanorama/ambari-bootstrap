@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+     ## This is a Falcon cluster entity
+     ## - Update myCluster & myHost for each endpoint
+
+     ## If working with a single node test cluster, use sed to create a template:
+     ## only update the variables in 1st & 2nd line:
+     mycluster="nameOfCluster"
+     myhost="fqdn-of-cluster"
+     sed -e "s/myCluster/${mycluster}/g" -e "s/myHost/${myhost}/g" myCluster.xml
+-->
+<cluster name="myCluster" description="myCluster" colo="myDatacenter" xmlns="uri:falcon:cluster:0.1">
+    <tags>clusterType=dev,environment=dev,purpose=analytics</tags>
+    <interfaces>
+        <interface type="readonly" endpoint="hftp://myHost:50070" version="2.2.0" />
+        <interface type="write" endpoint="hdfs://myHost:8020" version="2.2.0" />
+        <interface type="execute" endpoint="myHost:8050" version="2.2.0" />
+        <interface type="workflow" endpoint="http://myHost:11000/oozie/" version="4.0.0" />
+        <interface type="messaging" endpoint="tcp://myHost:61616?daemon=true" version="5.1.6" />
+        <interface type="registry" endpoint="thrift://myHost:9083" version="0.11.0" />
+    </interfaces>
+    <locations>
+        <location name="staging" path="/apps/falcon/myCluster/staging" />
+        <location name="temp" path="/tmp" />
+        <location name="working" path="/apps/falcon/myCluster/working" />
+    </locations>
+    <ACL owner="admin" group="users" permission="0x755"/>
+    <properties>
+        <property name="" value="" />
+    </properties>
+</cluster>
+
