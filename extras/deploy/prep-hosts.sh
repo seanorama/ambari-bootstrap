@@ -20,7 +20,7 @@ sudo chkconfig shellinaboxd on
 sudo service shellinaboxd restart
 
 ## re-enable password auth
-sudo sed -i.bak 's/^\(PasswordAuthentication\) no/\1 yes/' /etc/ssh/sshd_config
+sudo sed -i.bak -e 's/^\(PasswordAuthentication\) no/\1 yes/' -e 's/^\(ChallengeResponseAuthentication\) no/\1 yes/' /etc/ssh/sshd_config
 sudo service sshd restart
 
 ## add all users to 'users' group
