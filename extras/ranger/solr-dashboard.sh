@@ -80,7 +80,7 @@ sudo sed -i 's/logstash_logs/ranger_audits/g'  ${banana_home}/latest/src/config.
 
 #copy ranger audit dashboard json and replace sandbox.hortonworks.com with host where Solr is installed
 sudo curl -sSL -o ${banana_home}/latest/src/app/dashboards/default.json https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/scripts/default.json
-sudo sed -i.bak -e "s/sandbox.hortonworks.com:6083/${host}:${SOLR_RANGER_PORT}/g" -e "6083" ${banana_home}/latest/src/app/dashboards/default.json
+sudo sed -i.bak -e "s/sandbox.hortonworks.com:6083/${host}:${SOLR_RANGER_PORT}/g" ${banana_home}/latest/src/app/dashboards/default.json
 
 #clean any previous webapp compilations
 sudo rm -f $banana_home/latest/build/banana*.war
