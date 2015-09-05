@@ -13,3 +13,14 @@ ambari-configs
 
 ${ambari_config_set} ranger-admin-site ranger.audit.source.type solr
 ${ambari_config_set} ranger-admin-site ranger.audit.solr.urls "http://localhost:8983/solr/ranger_audits"
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.solr.zookeepers $(hostname -f):2181
+${ambari_config_set} ranger-hdfs-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-hive-audit xasecure.audit.destination.solr.zookeepers $(hostname -f):2181
+${ambari_config_set} ranger-hive-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.solr.zookeepers $(hostname -f):2181
+${ambari_config_set} ranger-yarn-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.solr.zookeepers $(hostname -f):2181
+${ambari_config_set} ranger-hbase-audit xasecure.audit.destination.solr true
+${ambari_config_set} ranger-kms-audit xasecure.audit.destination.solr.zookeepers $(hostname -f):2181
+${ambari_config_set} ranger-kms-audit xasecure.audit.destination.solr true
