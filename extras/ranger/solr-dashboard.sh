@@ -15,6 +15,7 @@ set -e
 
 arg=$1
 solr_home=/opt/lucidworks-hdpsearch/solr
+SOLR_RANGER_PORT=8983
 #solr_home=/opt/solr
 banana_home=/opt/banana-ranger
 #banana_home=/opt/banana
@@ -79,7 +80,7 @@ sudo sed -i 's/logstash_logs/ranger_audits/g'  ${banana_home}/latest/src/config.
 
 #copy ranger audit dashboard json and replace sandbox.hortonworks.com with host where Solr is installed
 sudo curl -sSL -o ${banana_home}/latest/src/app/dashboards/default.json https://raw.githubusercontent.com/abajwa-hw/security-workshops/master/scripts/default.json
-sudo sed -i.bak -e "s/sandbox.hortonworks.com/${host}/g" ${banana_home}/latest/src/app/dashboards/default.json
+sudo sed -i.bak -e "s/sandbox.hortonworks.com:6083/${host}:${SOLR_RANGER_PORT}/g" -e "6083" ${banana_home}/latest/src/app/dashboards/default.json
 
 #clean any previous webapp compilations
 sudo rm -f $banana_home/latest/build/banana*.war
@@ -99,7 +100,7 @@ sudo tee -a /opt/lucidworks-hdpsearch/solr/bin/solr.in.sh << EOF
 ZK_HOST="$(hostname -f):2181"
 SOLR_RANGER_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server
 SOLR_HOME=${SOLR_RANGER_HOME}
-SOLR_PORT=8983
+SOLR_PORT=${SOLR_RANGER_PORT}
 SOLR_MODE=solrcloud
 EOF
 
