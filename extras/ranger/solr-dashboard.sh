@@ -99,7 +99,7 @@ sudo tee -a /opt/lucidworks-hdpsearch/solr/bin/solr.in.sh << EOF
 #SOLR_MEMORY=512m
 ZK_HOST="$(hostname -f):2181"
 SOLR_RANGER_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server
-SOLR_HOME=${SOLR_RANGER_HOME}
+SOLR_HOME=/opt/lucidworks-hdpsearch/solr/ranger_audit_server
 SOLR_PORT=${SOLR_RANGER_PORT}
 SOLR_MODE=solrcloud
 EOF
@@ -121,17 +121,17 @@ sudo service solr restart
 if [ ! -f /etc/yum.repos.d/epel-apache-maven.repo ]; then
     sudo curl -sSL -o /etc/yum.repos.d/epel-apache-maven.repo https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
 fi
-sudo yum -y install apache-maven
+sudo yum -y -q install apache-maven
 cd /tmp
-sudo git clone https://github.com/abajwa-hw/iframe-view.git
-sudo sed -i.bak -e "s/iFrame View/Ranger Audits/g" \
+git clone https://github.com/abajwa-hw/iframe-view.git
+sed -i.bak -e "s/iFrame View/Ranger Audits/g" \
     -e "s/IFRAME_VIEW/RANGER_AUDITS/g" iframe-view/src/main/resources/view.xml
-sudo sed -i.bak -e "s#sandbox.hortonworks.com:6080#$host:8983/banana#g" iframe-view/src/main/resources/index.html
-sudo sed -i.bak -e "s/iframe-view/rangeraudits-view/g" \
-    -e "s/Ambari iFrame View/Ranger Audits View/g" iframe-view/pom.xml	
-sudo mv iframe-view rangeraudits-view
+sed -i.bak -e "s#sandbox.hortonworks.com:6080#$host:${SOLR_RANGER_PORT}/banana#g" iframe-view/src/main/resources/index.html
+sed -i.bak -e "s/iframe-view/rangeraudits-view/g" \
+    -e "s/Ambari iFrame View/Ranger Audits View/g" iframe-view/pom.xml
+mv iframe-view rangeraudits-view
 cd rangeraudits-view
-sudo mvn clean package
+mvn clean package
 sudo cp target/*.jar /var/lib/ambari-server/resources/views
 sudo service ambari-server restart
 sudo service ambari-agent restart

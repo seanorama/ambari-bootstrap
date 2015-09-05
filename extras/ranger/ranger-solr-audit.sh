@@ -12,4 +12,4 @@ source ${__dir}/../ambari_functions.sh
 ambari-configs
 
 ${ambari_config_set} ranger-admin-site ranger.audit.source.type solr
-${ambari_config_set} ranger-admin-site ranger.audit.solr.urls "http://localhost:6083/solr/ranger_audits"
+${ambari_config_set} ranger-admin-site ranger.audit.solr.urls "http://localhost:8983/solr/ranger_audits"
