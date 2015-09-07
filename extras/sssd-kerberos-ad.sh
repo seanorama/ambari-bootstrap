@@ -90,6 +90,7 @@ ad_server = ${ad_dc}
 #debug_level = 9
 #ldap_schema = ad
 enumerate = true
+ldap_group_nesting_level = 5
 [nss]
 override_shell = /bin/bash
 EOF
