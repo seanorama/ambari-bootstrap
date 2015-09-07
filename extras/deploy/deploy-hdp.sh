@@ -44,6 +44,3 @@ export ambari_services=${ambari_services}
 export cluster_name=$(hostname -s)
 export host_count=skip
 ./deploy-recommended-cluster.bash
-
-sleep 30
-
