@@ -84,13 +84,17 @@ override_space = _
 id_provider = ad
 auth_provider = ad
 chpass_provider = ad
-access_provider = ad
+#access_provider = ad
 ad_server = ${ad_dc}
-#cache_credentials = true
-#debug_level = 9
-#ldap_schema = ad
+ldap_id_mapping = true
+debug_level = 9
 enumerate = true
-ldap_group_nesting_level = 5
+#ldap_schema = ad
+#cache_credentials = true
+#ldap_group_nesting_level = 5
+ldap_tls_cacertdir = /etc/pki/tls/certs
+ldap_tls_cacert = /etc/pki/tls/certs/ca-bundle.crt
+ldap_tls_reqcert = never
 [nss]
 override_shell = /bin/bash
 EOF
