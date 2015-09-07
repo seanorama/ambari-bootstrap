@@ -1,39 +1,52 @@
 Tools for deploying clusters with Ambari
 ========================================
 
-Purpose
+Purposes
 -------
 
-Deploy a cluster with Ambari using Ambari Recommendations. **No blueprint required!**
+- Deploy an HDP cluster without writing an Ambari Blueprint.
+- Generate Ambari Blueprints and/or configuration recommendations as a base for crafting your own Blueprints.
 
 Requirements
 ----
 
-- python-argparse. On RedHat/CentOS: `yum install python-argparse`
 - bash
+- python-argparse. On RedHat/CentOS: `yum install python-argparse`
+- Ambari Server with registered Ambari Agents
+  - [ambari-bootstrap can do this if needed](https://github.com/seanorama/ambari-bootstrap#i-want-to-install-ambari--then-deploy-hdp-using-blueprints)
+
 
 Usage
 -----
 
-- Fetch to the Ambari Server which already has Ambari Agents registered:
+- Fetch the package:
   - `git clone https://github.com/seanorama/ambari-bootstrap.git; cd ambari-bootstrap/deploy`
   - or `curl -ssLO https://github.com/seanorama/ambari-bootstrap/archive/master.zip; unzip master.zip; cd ambari-bootstrap-master/deploy`
 
 - Deploy Hortonworks Data Platform _(no blueprint required)_:
-  - `bash ./deploy-recommended-cluster.bash`
+  - This [will deploy all services](https://github.com/seanorama/ambari-bootstrap/blob/master/deploy/deploy-recommended-cluster.bash#L12-L14) by default!
+  - `./deploy-recommended-cluster.bash`
 
-- Deploy HDP with minimal services:
+Configuration
+-------------
 
-  ```
-  export ambari_services="HDFS MAPREDUCE2 YARN ZOOKEEPER"
-  bash ./deploy-recommended-cluster.bash
-  ```
+It reads a few environment variables as overrides:
+  - Services to deploy: `export ambari_services="HDFS MAPREDUCE2 YARN PIG"`
+  - Generate blueprint but do not deploy: `export deploy=false`
+  - Ambari Agent host count check:
+    - Don't deploy unless there are exactly 5 hosts registered: `export host_count=5`
+    - Continue immediately with whatever hosts are registered: `export host_count=skip`
+  - see [deploy-recommend-cluster.bash](deploy-recommended-cluster.bash) for a few more options (such as hostname & credentials).
   
-  - The default services are: `FALCON FLUME GANGLIA HBASE HDFS HIVE KAFKA KERBEROS MAPREDUCE2
-    NAGIOS OOZIE PIG SLIDER SQOOP STORM TEZ YARN ZOOKEEPER`
-  - 'ambari_services' and other configuration overrides can be seen in in './deploy-recommended-cluster.bash'
+Example to generate a blueprint with minimal services, but not deploy the cluster:
 
-What?
+  ```
+export ambari_services="HDFS MAPREDUCE2 YARN ZOOKEEPER PIG"
+export deploy=false
+./deploy-recommended-cluster.bash
+  ```
+
+How is this possible?
 -----
 
 The basic process:
@@ -52,12 +65,6 @@ Blueprint recommendations currently has 2 bugs which this script works around by
 * The configuration for some services misses key values which will cause a cluster build to fail (nagios admin, hive credentials, and sometimes places zk weird or hive_metastore weird)
 * Any configurations passed in the recommendation request are ignored. So a `configuration-custom.json` is merged to provide customer configuration.
 
-Configuration
--------------
-
-Several options can be passed through as environment variables:
-  - TODO: Need document these
-  - For now have a look at the variables set at the top of the bash file.
 
 Contacts
 --------
