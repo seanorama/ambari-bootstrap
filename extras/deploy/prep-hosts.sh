@@ -9,7 +9,9 @@ echo "${ad_host_ip} activedirectory.hortonworks.com ${ad_host} activedirectory" 
 
 sudo yum makecache
 sudo yum -y -q install git epel-release screen ntpd mlocate python-configobj bind-utils
-sudo yum -y -q install shellinabox mosh tmux ack jq python-argparse
+sudo yum -y -q install shellinabox mosh tmux ack jq python-argparse python-pip
+sudo pip install --upgrade pip
+sudo pip install httpie
 
 sudo chkconfig ntpd on
 sudo service ntpd restart
