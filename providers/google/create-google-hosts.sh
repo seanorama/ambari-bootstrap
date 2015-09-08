@@ -36,17 +36,20 @@ export hosts_hdp=$(for lab in ${labs}; do printf "${lab_prefix}${lab}.${domain},
 export hosts_all=${hosts_hdp}
 
 function main() {
-  echo "Creating these hosts:"
+  echo "## Creating these hosts:"
   for host in $(echo ${hosts_all} | tr ',' '\n'); do printf "   %s\n" "${host}"; done
   read -p "Press [Enter] to continue. Ctrl-C to cancel."
 
   if [ "${create}" = true  ]; then
     for lab in ${labs}; do
-      create_instance_hdp ${lab}
+      create_instance_hdp ${lab} &
     done
-    sleep 30
-    gcloud compute config-ssh
+    sleep 60
+    for lab in ${labs}; do
+      add_to_group ${lab} &
+    done
     sleep 120
+    gcloud compute config-ssh
     read -r -d '' command <<EOF
 sudo sed -i.bak "s/^\(inet_protocols = \)all/\1ipv4/" /etc/postfix/main.cf; sudo service postfix restart
 curl -sSL https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/providers/growroot.sh | sudo bash; sudo reboot
@@ -69,6 +72,10 @@ function create_instance_hdp() {
     --maintenance-policy "MIGRATE" --tags "hdp-partner-workshop" \
     --boot-disk-type "pd-standard" --boot-disk-size 200GB  --no-scopes
 
+}
+
+function add_to_group() {
+  local lab=$1
   gcloud preview --project "siq-haas" instance-groups --zone "europe-west1-b" \
     instances --group "hdp-partner-workshop" add "${lab_prefix}${lab}"
 }
