@@ -26,7 +26,7 @@ sudo sed -i.bak -e 's/^\(PasswordAuthentication\) no/\1 yes/' -e 's/^\(Challenge
 sudo service sshd restart
 
 ## add all users to 'users' group
-users="admin rangeradmin keyadmin"
+users="admin rangeradmin keyadmin student"
 for user in ${users}; do
     sudo useradd ${user}
     printf "${mypass}\n${mypass}" | sudo passwd --stdin ${user}
