@@ -44,10 +44,12 @@ function main() {
     for lab in ${labs}; do
       create_instance_hdp ${lab} &
     done
-    sleep 60
+    wait
+    sleep 10
     for lab in ${labs}; do
       add_to_group ${lab} &
     done
+    wait
     sleep 120
     gcloud compute config-ssh
     read -r -d '' command <<EOF
