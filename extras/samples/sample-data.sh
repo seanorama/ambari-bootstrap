@@ -65,9 +65,14 @@ LOAD DATA LOCAL INPATH '/opt/hadoop/samples/trucks.csv' OVERWRITE INTO TABLE tru
 
 CREATE TABLE geolocation STORED AS ORC AS SELECT * FROM geolocation_stage;
 CREATE TABLE trucks STORED AS ORC AS SELECT * FROM trucks_stage;
+
+DROP TABLE geolocation_stage;
+DROP TABLE trucks_stage;
 EOF
 
 beeline -n student -u jdbc:hive2://$(hostname -f):10000/default -f trucking.sql
+
+exit
 
 beeline -n student -u jdbc:hive2://$(hostname -f):10000/default -e \
 "CREATE TABLE truck_mileage STORED AS ORC AS
