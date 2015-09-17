@@ -22,11 +22,25 @@ sudo yum -y -q install jq python-argparse python-configobj
 
 sudo usermod -a -G users ${USER}
 
-sudo java_version=8 install_ambari_server=true ${__dir}/../ambari-bootstrap.sh
+ambari_repo=http://storage.googleapis.com/hdp-repo-mirror/ambari/centos7/ambari.repo
+sudo ambari_repo=${ambari_repo} java_version=8 install_ambari_server=true ${__dir}/../ambari-bootstrap.sh
 
 ${__dir}/../providers/google/public-hostname.sh
 sudo service ambari-agent restart
 sleep 15
+
+ambari-configs
+
+## Update to use repos on Google Cloud
+read -r -d '' body <<EOF
+{ "Repositories" : { "base_url" : "http://storage.googleapis.com/hdp-repo-mirror/hdp/centos7/HDP-2.3" } }
+EOF
+echo "${body}" | ${ambari_curl}/stacks/HDP/versions/2.3/operating_systems/redhat7/repositories/HDP-2.3 -X PUT -d @-
+
+read -r -d '' body <<EOF
+{ "Repositories" : { "base_url" : "http://storage.googleapis.com/hdp-repo-mirror/hdp/centos7/HDP-UTILS-1.1.0.20" } }
+EOF
+echo "${body}" | ${ambari_curl}/stacks/HDP/versions/2.3/operating_systems/redhat7/repositories/HDP-UTILS-1.1.0.20 -X PUT -d @-
 
 cd ${__dir}/../deploy/
 cat << EOF > configuration-custom.json
