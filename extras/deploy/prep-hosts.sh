@@ -20,10 +20,6 @@ sudo service shellinaboxd restart
 sudo sed -i.bak -e 's/^\(PasswordAuthentication\) no/\1 yes/' -e 's/^\(ChallengeResponseAuthentication\) no/\1 yes/' /etc/ssh/sshd_config
 sudo service sshd restart
 
-"## Add masterclass users and dumb down ssh security\n",
-"sed -i -- 's/cloud-user/masterclass/g' /etc/sudoers\n",
-"service sshd reload\n",
-
 ## add all users to 'users' group
 users="admin rangeradmin keyadmin student masterclass"
 for user in ${users}; do

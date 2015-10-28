@@ -57,8 +57,7 @@ cat << EOF > configuration-custom.json
 {
   "configurations" : {
       "hdfs-site": {
-        "dfs.replication": "1",
-        "dfs.datanode.data.dir" : "/mnt/dev/xvdb/dn,/mnt/dev/xvdc/dn"
+        "dfs.replication": "1"
       }
   }
 }
