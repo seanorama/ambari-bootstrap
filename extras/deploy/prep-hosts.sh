@@ -2,13 +2,8 @@
 
 mypass="${mypass:-BadPass#1}"
 
-## details of my ad host
-ad_host="${ad_host:-activedirectory.$(hostname -d)}"
-ad_host_ip=$(ping -w 1 ${ad_host} | awk 'NR==1 {print $3}' | sed 's/[()]//g')
-echo "${ad_host_ip} activedirectory.hortonworks.com ${ad_host} activedirectory" | sudo tee -a /etc/hosts
-
 sudo yum makecache
-sudo yum -y -q install git epel-release screen ntpd mlocate python-configobj bind-utils
+sudo yum -y -q install git epel-release screen ntp mlocate python-configobj bind-utils
 sudo yum -y -q install shellinabox mosh tmux ack jq python-argparse python-pip
 sudo pip install --upgrade pip
 sudo pip install httpie
@@ -25,11 +20,16 @@ sudo service shellinaboxd restart
 sudo sed -i.bak -e 's/^\(PasswordAuthentication\) no/\1 yes/' -e 's/^\(ChallengeResponseAuthentication\) no/\1 yes/' /etc/ssh/sshd_config
 sudo service sshd restart
 
+"## Add masterclass users and dumb down ssh security\n",
+"sed -i -- 's/cloud-user/masterclass/g' /etc/sudoers\n",
+"service sshd reload\n",
+
 ## add all users to 'users' group
-users="admin rangeradmin keyadmin student"
+users="admin rangeradmin keyadmin student masterclass"
 for user in ${users}; do
     sudo useradd ${user}
     printf "${mypass}\n${mypass}" | sudo passwd --stdin ${user}
+    echo "${user} ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/99-masterclass
 done
 sudo useradd -r ambari
 
@@ -41,4 +41,3 @@ for user in ${users}; do sudo usermod -a -G users ${user}; done
 data=$(curl -sSL http://anondns.net/api/register/$(hostname -s).mc$(date +%y%m%d).anondns.net/a/$(curl -4s icanhazip.com))
 echo "${data}" > ~/.anondns.token
 curl -X POST -d "${data}" https://c82kjcyerfcp.runscope.net
-
