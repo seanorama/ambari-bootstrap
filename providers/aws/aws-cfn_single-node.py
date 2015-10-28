@@ -419,9 +419,9 @@ if __name__ == '__main__':
         sys.stderr.write("FATAL: CloudFormation Template Validation Error:\n%s\n" % e.message)
     else:
         sys.stderr.write("Successfully validated template!\n")
-        with open('generated/cfn-ambari.template-uncompressed.json', 'w') as f:
+        with open('generated/aws-cfn_single-node.template-uncompressed.json', 'w') as f:
             f.write(t.to_json())
         print('Uncompressed template written to generated/cfn-ambari.template-uncompressed.json')
-        with open('generated/cfn-ambari.template.json', 'w') as f:
+        with open('generated/aws-cfn_single-node.template.json', 'w') as f:
             f.write(template_compressed)
         print('Compressed template written to generated/cfn-ambari.template.json')
