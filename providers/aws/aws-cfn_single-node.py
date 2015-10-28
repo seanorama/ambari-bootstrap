@@ -25,6 +25,7 @@ ref_region = Ref('AWS::Region')
 ref_stack_name = Ref('AWS::StackName')
 ref_java_provider = Ref('JavaProvider')
 ref_java_version = Ref('JavaVersion')
+ref_postscript = Ref('PostScript')
 
 # now the work begins
 t = Template()
@@ -61,6 +62,14 @@ JavaVersion = t.add_parameter(Parameter(
     AllowedValues=['7','8'],
     ConstraintDescription="7 or 8",
 ))
+
+PostScript = t.add_parameter(Parameter(
+    "PostScript",
+    Default="/bin/true",
+    Type="String",
+    Description="Command you want to run after the node is deployed"
+))
+
 
 SSHLocation = t.add_parameter(Parameter(
     "SSHLocation",
@@ -327,12 +336,8 @@ for drv in /dev/xvd[b-z]; do
 done
 wait
 
-## Bootstrap Ambari
-yum install -y curl
-curl -sSL \
-  https://raw.githubusercontent.com/seanorama/ambari-bootstrap/master/ambari-bootstrap.sh \
-  -o /root/ambari-bootstrap.sh
-sh /root/ambari-bootstrap.sh
+## Deploy Cluster for SQL masterclass
+$postscript || true
 
 ## If all went well, signal success
 cfn-signal -e ${?} --region ${region} --stack ${stack} --resource ${resource}
@@ -344,6 +349,7 @@ def my_bootstrap_script(resource,install_ambari_agent,install_ambari_server,amba
         "exec &> >(tee -a /root/cloudformation.log)\n"
         "set -o nounset\n",
         "set -o errexit\n",
+        "export postscript='", ref_postscript, ",\n",
         "export region='", ref_region, "'\n",
         "export stack='", ref_stack_name, "'\n",
         "export resource='", resource ,"'\n",
@@ -393,7 +399,7 @@ t.add_output([
         "AmbariSSH",
         Description="SSH to the Ambari Node",
         Value=Join("", [
-            "ssh ec2-user@", GetAtt('AmbariNode', 'PublicDnsName')
+            "ssh centos@", GetAtt('AmbariNode', 'PublicDnsName')
         ]),
     ),
     Output(
