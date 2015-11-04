@@ -179,7 +179,9 @@ case "${lsb_dist}" in
                 ambari-server setup -j "${JAVA_HOME}" -s
             fi
             chkconfig ambari-server on
-            nohup ambari-server start
+            if ! nohup sh -c "ambari-server start 2>&1 > /dev/null"; then
+                printf 'Ambari Server failed to start\n' >&2
+            fi
         fi
         printf "## Success! All done.\n"
         exit 0
