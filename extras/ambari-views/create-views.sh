@@ -49,10 +49,14 @@ fi
 ########################################################################
 ## update update proxyuser config
 if [ "${config_proxyuser}" = true  ]; then
-  ${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.groups "users,hadoop-users"
-  ${ambari_config_set} core-site hadoop.proxyuser.${ambari_user}.hosts "*"
+  ${ambari_config_set} core-site yarn.resourcemanager.proxyuser.${ambari_user}.groups "users,hadoop-users"
+  ${ambari_config_set} core-site yarn.resourcemanager.proxyuser.${ambari_user}.hosts "*"
   ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.groups "users,hadoop-users"
   ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.hosts= "*"
+  ${ambari_config_set} yarn-site hadoop.proxyuser.${ambari_user}.groups "users,hadoop-users"
+  ${ambari_config_set} yarn-site hadoop.proxyuser.${ambari_user}.hosts "*"
+  ${ambari_config_set} yarn-site yarn.timeline-service.http-authentication.proxyuser.${ambari_user}.groups "users,hadoop-users"
+  ${ambari_config_set} yarn-site yarn.timeline-service.http-authentication.proxyuser.${ambari_user}.hosts "*"
 fi
 
 ########################################################################
@@ -121,6 +125,36 @@ read -r -d '' body <<EOF
 }
 EOF
 url="${ambari_curl}/views/PIG/versions/1.0.0/instances/Pig"
+${url} -X DELETE
+echo "${body}" | ${url} -X POST -d @-
+
+########################################################################
+## tez view
+
+${ambari_config_set} core-site hadoop.http.filter.initializers org.apache.hadoop.security.AuthenticationFilterInitializer
+${ambari_config_set} yarn-site yarn.resourcemanager.system-metrics-publisher.enabled "true"
+${ambari_config_set} yarn-site yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled "true"
+${ambari_config_set} yarn-site yarn.timeline-service.enabled "true"
+
+#dd if=/dev/urandom of=/etc/security/http_secret bs=1024 count=1
+#chown hdfs:hadoop /etc/security/http_secret
+#chmod 440 /etc/security/http_secret
+#echo "/etc/security/http_secret"
+#${ambari_config_set} core-site hadoop.http.authentication.signature.secret.file "/etc/security/http_secret"
+
+read -r -d '' body <<EOF
+{
+  "ViewInstanceInfo": {
+    "instance_name": "Tez", "label": "Tez", "description": "Tez",
+    "visible": true,
+    "properties": {
+      "yarn.timeline-server.url": "http://${yarn_ats_url}",
+      "yarn.resourcemanager.url": "http://${yarn_resourcemanager_url}"
+    }
+  }
+}
+EOF
+url="${ambari_curl}/views/TEZ/versions/0.7.0.2.3.2.0-323/instances/Tez"
 ${url} -X DELETE
 echo "${body}" | ${url} -X POST -d @-
 
