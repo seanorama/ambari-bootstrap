@@ -38,6 +38,10 @@ ambari_user=$(python -c 'from configobj import ConfigObj; \
   config = ConfigObj("/etc/ambari-server/conf/ambari.properties"); \
   print(config.get("ambari-server.user"))')
 
+ambari_server_host_name=$(${ambari_curl}/services/AMBARI/components/AMBARI_SERVER?fields=hostComponents \
+    | python -c 'import sys,json; \
+    print json.load(sys.stdin)["hostComponents"][0]["RootServiceHostComponents"]["host_name"]')
+
 if [ -z "${realm}"  ]; then
   webhdfs_auth=null
   hive_auth="auth=None"
@@ -50,13 +54,13 @@ fi
 ## update update proxyuser config
 if [ "${config_proxyuser}" = true  ]; then
   ${ambari_config_set} core-site yarn.resourcemanager.proxyuser.${ambari_user}.groups "users,hadoop-users"
-  ${ambari_config_set} core-site yarn.resourcemanager.proxyuser.${ambari_user}.hosts "*"
+  ${ambari_config_set} core-site yarn.resourcemanager.proxyuser.${ambari_user}.hosts "${ambari_server_host_name}"
   ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.groups "users,hadoop-users"
-  ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.hosts= "*"
+  ${ambari_config_set} webhcat-site webhcat.proxyuser.${ambari_user}.hosts= "${ambari_server_host_name}"
   ${ambari_config_set} yarn-site hadoop.proxyuser.${ambari_user}.groups "users,hadoop-users"
-  ${ambari_config_set} yarn-site hadoop.proxyuser.${ambari_user}.hosts "*"
+  ${ambari_config_set} yarn-site hadoop.proxyuser.${ambari_user}.hosts "${ambari_server_host_name}"
   ${ambari_config_set} yarn-site yarn.timeline-service.http-authentication.proxyuser.${ambari_user}.groups "users,hadoop-users"
-  ${ambari_config_set} yarn-site yarn.timeline-service.http-authentication.proxyuser.${ambari_user}.hosts "*"
+  ${ambari_config_set} yarn-site yarn.timeline-service.http-authentication.proxyuser.${ambari_user}.hosts "${ambari_server_host_name}"
 fi
 
 ########################################################################
