@@ -4,7 +4,7 @@
 
 #hdp_version=`hdp-select status hadoop-client | sed 's/hadoop-client - \([0-9]\.[0-9]\).*/\1/'`
 #hdp_version=2.3
-hdp_version="${find /var/lib/ambari-server/resources/stacks/HDP/[0-9]\.[0-9] -mindepth 0 -maxdepth 0 -printf "%f\n" | sort -nr | head -1}"
+hdp_version="$(find /var/lib/ambari-server/resources/stacks/HDP/[0-9]\.[0-9] -mindepth 0 -maxdepth 0 -printf "%f\n" | sort -nr | head -1)"
 
 ## zeppelin
 git clone https://github.com/hortonworks-gallery/ambari-zeppelin-service.git /var/lib/ambari-server/resources/stacks/HDP/${hdp_version}/services/ZEPPELIN
