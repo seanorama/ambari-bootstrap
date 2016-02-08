@@ -25,6 +25,7 @@ java_version="${java_version:-7}"
 ambari_server="${ambari_server:-localhost}"
 ambari_version="${ambari_version:-2.2.0.0}"
 ambari_version_major="${ambari_version_major:-$(echo ${ambari_version} | cut -c 1).x}"
+ambari_server_custom_script="${ambari_server_custom_script:-/bin/true}"
 ##ambari_repo= ## if using a local repo. Otherwise the repo path is determined automatically in a line below.
 curl="curl -ksSL"
 
@@ -178,6 +179,9 @@ case "${lsb_dist}" in
             else
                 ambari-server setup -j "${JAVA_HOME}" -s
             fi
+
+            sh -c "${post_command}"
+
             chkconfig ambari-server on
             if ! nohup sh -c "ambari-server start 2>&1 > /dev/null"; then
                 printf 'Ambari Server failed to start\n' >&2
