@@ -11,8 +11,11 @@ git clone https://github.com/hortonworks-gallery/ambari-zeppelin-service.git /va
 sed -i.bak '/dependencies for all/a \    "ZEPPELIN_MASTER-START": ["NAMENODE-START", "DATANODE-START"],' /var/lib/ambari-server/resources/stacks/HDP/${hdp_version}/role_command_order.json
 
 ## solr
+yum -y -q install patch
 git clone https://github.com/abajwa-hw/solr-stack.git /var/lib/ambari-server/resources/stacks/HDP/${hdp_version}/services/SOLR
 sed -i.bak '/dependencies for all/a \    "SOLR-START" : ["ZOOKEEPER_SERVER-START"],' /var/lib/ambari-server/resources/stacks/HDP/${hdp_version}/role_command_order.json
+curl -sSL -O https://gist.githubusercontent.com/seanorama/5992b9f1c9bf594e16e2/raw/d19dba326b9df0ea94d7730beb72aeba4c58478e/add-solrmaster-to-stackadvisor.patch
+patch -b /var/lib/ambari-server/resources/stacks/HDP/2.0.6/services/stack_advisor.py < add-solrmaster-to-stackadvisor.patch
 
 ## nifi
 git clone https://github.com/abajwa-hw/ambari-nifi-service.git   /var/lib/ambari-server/resources/stacks/HDP/${hdp_version}/services/NIFI
