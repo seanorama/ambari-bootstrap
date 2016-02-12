@@ -34,6 +34,6 @@ users="$(getent passwd|awk -v UID_MIN="${UID_MIN}" -F: '$3>=UID_MIN{print $1}')"
 for user in ${users}; do sudo usermod -a -G users ${user}; done
 
 ## register dynamic dns
-data=$(curl -sSL http://anondns.net/api/register/$(hostname -s).mc$(date +%y%m%d).anondns.net/a/$(curl -4s icanhazip.com))
-echo "${data}" > ~/.anondns.token
-curl -X POST -d "${data}" https://c82kjcyerfcp.runscope.net
+#data=$(curl -sSL http://anondns.net/api/register/$(hostname -s).mc$(date +%y%m%d).anondns.net/a/$(curl -4s icanhazip.com))
+#echo "${data}" > ~/.anondns.token
+#curl -X POST -d "${data}" https://c82kjcyerfcp.runscope.net
