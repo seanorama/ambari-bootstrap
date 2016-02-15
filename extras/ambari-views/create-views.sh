@@ -29,7 +29,7 @@ hive_port=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.server2.thri
 hive_host=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.metastore.uris" {print $4}' | head -1 | sed -e "s,^thrift://,," -e "s,:[0-9]*,,")
 yarn_ats_url=$(${ambari_config_get} yarn-site | awk -F'"' '$2 == "yarn.timeline-service.webapp.address" {print $4}' | head -1 )
 yarn_resourcemanager_url=$(${ambari_config_get} yarn-site | awk -F'"' '$2 == "yarn.resourcemanager.webapp.address" {print $4}' | head -1 )
-webhcat_hostname=$(${ambari_curl}/clusters/${ambari_cluster}/services/HIVE/components/HCAT?fields=host_components/HostRoles/host_name\&minimal_response=true \
+webhcat_hostname=$(${ambari_curl}/clusters/${ambari_cluster}/services/HIVE/components/WEBHCAT_SERVER?fields=host_components/HostRoles/host_name\&minimal_response=true \
     | python -c 'import sys,json; \
     print json.load(sys.stdin)["host_components"][0]["HostRoles"]["host_name"]')
 webhcat_port=$(${ambari_config_get} webhcat-site | awk -F'"' '$2 == "templeton.port" {print $4}' | head -1)
