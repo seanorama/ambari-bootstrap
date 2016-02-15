@@ -47,7 +47,7 @@ if [ -z "${realm}"  ]; then
   hive_auth="auth=None"
 else
   webhdfs_auth='"auth=KERBEROS;proxyuser='${ambari_user}'"'
-  hive_auth="auth=KERBEROS;principal=hive/${hive_host}@${realm}"
+  hive_auth="auth=KERBEROS;principal=hive/${hive_host}@${realm};hive.server2.proxy.user=\${username}"
 fi
 
 ########################################################################
