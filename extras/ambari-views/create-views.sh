@@ -158,7 +158,7 @@ read -r -d '' body <<EOF
   }
 }
 EOF
-url="${ambari_curl}/views/TEZ/versions/0.7.0.2.3.2.0-323/instances/Tez"
+url="${ambari_curl}/views/TEZ/versions/0.7.0.2.3.4.0-1310/instances/Tez"
 ${url} -X DELETE
 echo "${body}" | ${url} -X POST -d @-
 
