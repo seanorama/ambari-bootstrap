@@ -98,7 +98,7 @@ read -r -d '' body <<EOF
       "scripts.settings.defaults-file": "/user/\${username}/.\${instanceName}.defaultSettings",
       "hive.host": "${hive_host}",
       "hive.port": "${hive_port}",
-      "views.tez.instance": "TEZ_CLUSTER_INSTANCE",
+      "views.tez.instance": "Tez",
       "yarn.ats.url": "http://${yarn_ats_url}",
       "yarn.resourcemanager.url": "http://${yarn_resourcemanager_url}"
     }
