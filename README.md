@@ -90,7 +90,7 @@ For example, this will deploy to a single node & then deploy with all HDP servic
   git clone https://github.com/seanorama/ambari-bootstrap
   cd ambari-bootstrap
   export install_ambari_server=true
-  sudo sh ./ambari-bootstrap.sh
+  ./ambari-bootstrap.sh
   cd deploy
   bash ./deploy-recommended-cluster.bash
   ```
