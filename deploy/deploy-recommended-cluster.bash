@@ -58,25 +58,28 @@ for y in [x["Hosts"]["host_name"] for x in obj["items"]]:
 }
 
 host_check() {
-    sleep_seconds=15
+    #SLEEP=10; COUNT=60
+    #until $(: TODO:equal of hosts); do
+        #sleep ${SLEEP}
+        #let COUNT=COUNT-1
+        #if [ $COUNT -eq 0 ]; then
+            #echo "Timeout: All Ambari-Agents did not register"
+            #exit 1
+        #fi
+    #done
+    #unset SLEEP; unset COUNT
+
+    SLEEP=10
     while true; do
         hosts_regd
         hosts_regd_count=$(echo ${hosts_regd[*]} | wc -w)
-        printf "\n$(date)\n\n"
-        printf "# Checking the number of registered hosts before proceeding with deployment\n"
-        printf "===========================================================================\n\n"
-        printf "  * Hosts expected:   ${host_count}\n"
-        printf "  * Hosts registered: ${hosts_regd_count}\n\n"
         if [ ${hosts_regd_count} -eq ${host_count} ]; then
-            printf "Success: All hosts have checked in!\n\n"
-            printf "# Deploying Hortonworks Data Platform using Ambari Blueprint Recommendations\n"
-            printf "============================================================================\n\n"
+            printf "## Success: ${hosts_regd_count} of ${host_count} registered.\n"
+            printf "##          Deploying generated Ambari Blueprint\n"
             break
         else
-            printf "Some hosts have not checked in.\n\n"
-            printf "Notice: We will check again in ${sleep_seconds} seconds.\n"
-            sleep ${sleep_seconds}
-            clear
+            printf "## Waiting: ${hosts_regd_count} of ${host_count} Ambari-Agents have registered.\n\n"
+            sleep ${SLEEP}
         fi
     done
 }
