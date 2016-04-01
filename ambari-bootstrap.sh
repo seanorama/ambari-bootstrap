@@ -26,6 +26,8 @@ ambari_server="${ambari_server:-localhost}"
 ambari_version="${ambari_version:-2.2.1.0}"
 ambari_version_major="${ambari_version_major:-$(echo ${ambari_version} | cut -c 1).x}"
 ambari_server_custom_script="${ambari_server_custom_script:-/bin/true}"
+ambari_user="${ambari_user:-root}"
+ambari_setup_switches="${ambari_setup_switches:-}"
 ##ambari_repo= ## if using a local repo. Otherwise the repo path is determined automatically in a line below.
 curl="curl -ksSL"
 
@@ -157,6 +159,7 @@ case "${lsb_dist}" in
             mkdir -p /usr/java
             ln -sf /etc/alternatives/java_sdk /usr/java/default
             JAVA_HOME='/usr/java/default'
+            ambari_setup_switches="${ambari_setup_switches} -j ${JAVA_HOME}"
         fi
 
         printf "## fetch ambari repo\n"
@@ -174,10 +177,17 @@ case "${lsb_dist}" in
         if [ "${install_ambari_server}" = true ]; then
             printf "## install ambari-server\n"
             yum install -q -y ambari-server
-            if [ "${java_provider}" = 'oracle' ]; then
-                ambari-server setup -s
-            else
-                ambari-server setup -j "${JAVA_HOME}" -s
+
+            if [ "${ambari_user}" != root]; then
+                useradd -r ${ambari_user}
+                ambari_setup_switches="${ambari_setup_switches} --service-user-name ${ambari_user}"
+            fi
+
+            echo ${ambari_setup_switches}
+            ambari-server setup -s "${ambari_setup_switches}"
+
+            if [ "${ambari_protocol}" = "https" ]; then
+                my_ambari_https
             fi
 
             sh -c "${ambari_server_custom_script}"
