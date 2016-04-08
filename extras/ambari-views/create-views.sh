@@ -29,7 +29,7 @@ hive_port=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.server2.thri
 hive_host=$(${ambari_config_get} hive-site | awk -F'"' '$2 == "hive.metastore.uris" {print $4}' | head -1 | sed -e "s,^thrift://,," -e "s,:[0-9]*,,")
 yarn_ats_url=$(${ambari_config_get} yarn-site | awk -F'"' '$2 == "yarn.timeline-service.webapp.address" {print $4}' | head -1 )
 yarn_resourcemanager_url=$(${ambari_config_get} yarn-site | awk -F'"' '$2 == "yarn.resourcemanager.webapp.address" {print $4}' | head -1 )
-webhcat_hostname=$(${ambari_curl}/clusters/${ambari_cluster}/services/HIVE/components/HCAT?fields=host_components/HostRoles/host_name\&minimal_response=true \
+webhcat_hostname=$(${ambari_curl}/clusters/${ambari_cluster}/services/HIVE/components/WEBHCAT_SERVER?fields=host_components/HostRoles/host_name\&minimal_response=true \
     | python -c 'import sys,json; \
     print json.load(sys.stdin)["host_components"][0]["HostRoles"]["host_name"]')
 webhcat_port=$(${ambari_config_get} webhcat-site | awk -F'"' '$2 == "templeton.port" {print $4}' | head -1)
@@ -47,7 +47,7 @@ if [ -z "${realm}"  ]; then
   hive_auth="auth=None"
 else
   webhdfs_auth='"auth=KERBEROS;proxyuser='${ambari_user}'"'
-  hive_auth="auth=KERBEROS;principal=hive/${hive_host}@${realm}"
+  hive_auth="auth=KERBEROS;principal=hive/${hive_host}@${realm};hive.server2.proxy.user=\${username}"
 fi
 
 ########################################################################
@@ -98,7 +98,7 @@ read -r -d '' body <<EOF
       "scripts.settings.defaults-file": "/user/\${username}/.\${instanceName}.defaultSettings",
       "hive.host": "${hive_host}",
       "hive.port": "${hive_port}",
-      "views.tez.instance": "TEZ_CLUSTER_INSTANCE",
+      "views.tez.instance": "Tez",
       "yarn.ats.url": "http://${yarn_ats_url}",
       "yarn.resourcemanager.url": "http://${yarn_resourcemanager_url}"
     }
@@ -158,7 +158,7 @@ read -r -d '' body <<EOF
   }
 }
 EOF
-url="${ambari_curl}/views/TEZ/versions/0.7.0.2.3.2.0-323/instances/Tez"
+url="${ambari_curl}/views/TEZ/versions/0.7.0.2.3.4.0-1310/instances/Tez"
 ${url} -X DELETE
 echo "${body}" | ${url} -X POST -d @-
 

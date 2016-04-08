@@ -33,7 +33,8 @@ ambari-get-cluster() {
 ambari-configs() {
   ambari-get-cluster
   ambari_configs_sh="/var/lib/ambari-server/resources/scripts/configs.sh \
-    -u ${ambari_user} -p ${ambari_pass}"
+    -u ${ambari_user} -p ${ambari_pass} \
+    -port ${ambari_port} $(if [ ${ambari_protocol} == 'https' ]; then echo '-s '; fi)"
   ambari_config_set="${ambari_configs_sh} set ${ambari_host} ${ambari_cluster}"
   ambari_config_get="${ambari_configs_sh} get ${ambari_host} ${ambari_cluster}"
 
