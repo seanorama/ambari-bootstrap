@@ -20,12 +20,15 @@ set -o pipefail
 install_ambari_agent="${install_ambari_agent:-true}"
 install_ambari_server="${install_ambari_server:-false}"
 iptables_disable="${iptables_disable:-true}"
+java_install="${java_install:-true}"
 java_provider="${java_provider:-open}" # accepts: open, oracle
 java_version="${java_version:-7}"
+java_path="${java_path:/etc/alternatives/java_sdk}"
 ambari_server="${ambari_server:-localhost}"
 ambari_version="${ambari_version:-2.2.1.0}"
 ambari_version_major="${ambari_version_major:-$(echo ${ambari_version} | cut -c 1).x}"
 ambari_server_custom_script="${ambari_server_custom_script:-/bin/true}"
+ambari_protocol="${ambari_protocol:-http}"
 ambari_user="${ambari_user:-root}"
 ambari_setup_switches="${ambari_setup_switches:-}"
 ##ambari_repo= ## if using a local repo. Otherwise the repo path is determined automatically in a line below.
@@ -100,6 +103,18 @@ EOF
     printf '\nsh /usr/local/sbin/ambari-thp-disable.sh || /bin/true\n\n' >> /etc/rc.local
 }
 
+my_ambari_https() {
+    printf 'api.ssl=true\nclient.api.ssl.cert_name=https.crt\nclient.api.ssl.key_name=https.key\nclient.api.ssl.port=8444' >> /etc/ambari-server/conf/ambari.properties
+    mkdir /root/ambari-cert
+    cd /root/ambari-cert
+    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt -batch
+    echo PulUuMWPp0o4Lq6flGA0NGDKNRZQGffW2mWmJI3klSyspS7mUl > pass.txt
+    openssl pkcs12 -export -in 'server.crt' -inkey 'server.key' -certfile 'server.crt' -out '/var/lib/ambari-server/keys/https.keystore.p12'  -password file:pass.txt 
+    mv pass.txt /var/lib/ambari-server/keys/https.pass.txt
+    cd ..
+    rm -rf /root/ambari-cert
+}
+
 my_disable_ipv6() {
     mkdir -p /etc/sysctl.d
     ( cat > /etc/sysctl.d/99-hadoop-ipv6.conf <<-'EOF'
@@ -113,6 +128,9 @@ EOF
     sysctl -e -p /etc/sysctl.d/99-hadoop-ipv6.conf
 }
 
+
+
+
 case "${lsb_dist}" in
     centos|redhat)
 
@@ -122,19 +140,31 @@ case "${lsb_dist}" in
         (
             set +o errexit
 
+            printf "## Info: Installing base packages\n"
+            packages="curl openssl python zlib wget unzip openssh-clients"
+            if [ "${system_config}" = true ]; then
+                packages+=" ntp"
+                setenforce 0 || true
+                sed -i 's/\(^[^#]*\)SELINUX=enforcing/\1SELINUX=disabled/' /etc/selinux/config
+                sed -i 's/\(^[^#]*\)SELINUX=permissive/\1SELINUX=disabled/' /etc/selinux/config
+            if [ "${system_config}" = true ]; then
+fi
+            yum install -y -q ${packages}
 
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
 
-            printf "## Info: Installing base packages\n"
-            yum install -y -q curl ntp openssl python zlib wget unzip openssh-clients
+            printf "## Raising file limits\n"
+            ( cat > /etc/security/limits.d/90-hdp.conf <<-'EOF'
+* soft nofile 32768
+* hard nofile 32768
+* soft nproc 32768
+* hard nproc 32768
+EOF
+            )
 
             printf "## Info: Fixing sudo to not requiretty. This is the default in newer distributions\n"
             printf 'Defaults !requiretty\n' > /etc/sudoers.d/888-dont-requiretty
-
-            setenforce 0 || true
-            sed -i 's/\(^[^#]*\)SELINUX=enforcing/\1SELINUX=disabled/' /etc/selinux/config
-            sed -i 's/\(^[^#]*\)SELINUX=permissive/\1SELINUX=disabled/' /etc/selinux/config
 
             printf "## Info: Disabling Transparent Huge Pages\n"
             my_disable_thp
@@ -156,9 +186,8 @@ case "${lsb_dist}" in
         if [ "${java_provider}" != 'oracle' ]; then
             printf "## installing java\n"
             yum install -q -y java-1.${java_version}.0-openjdk-devel
-            mkdir -p /usr/java
-            ln -sf /etc/alternatives/java_sdk /usr/java/default
-            JAVA_HOME='/usr/java/default'
+            JAVA_HOME=${java_path}
+            echo "export JAVA_HOME=${JAVA_HOME}" >> /etc/environment
             ambari_setup_switches="${ambari_setup_switches} -j ${JAVA_HOME}"
         fi
 
