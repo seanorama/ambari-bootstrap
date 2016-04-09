@@ -3,13 +3,10 @@
 mypass="${mypass:-BadPass#1}"
 
 sudo yum makecache
-sudo yum -y -q install git epel-release screen ntp mlocate python-configobj bind-utils
+sudo yum -y -q install git epel-release screen mlocate python-configobj bind-utils
 sudo yum -y -q install shellinabox mosh tmux ack jq python-argparse python-pip
 sudo pip install --upgrade pip
 sudo pip install httpie
-
-sudo chkconfig ntpd on
-sudo service ntpd restart
 
 ## shell in a box, web based console on port 4200
 sudo chkconfig shellinaboxd on
