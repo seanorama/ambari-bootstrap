@@ -9,7 +9,7 @@ import json
 
 
 DEFAULT_PASSWORD = 'hadoop'
-RECOMMENDATION_STRATEGY = 'ALWAYS_APPLY'
+RECOMMENDATION_STRATEGY = 'ONLY_STACK_DEFAULTS_APPLY'
 
 
 def _merge_configurations(recommended_configurations, custom_configurations):
