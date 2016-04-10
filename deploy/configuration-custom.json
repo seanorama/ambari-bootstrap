@@ -1,7 +1,24 @@
 {
   "configurations" : {
-      "core-site": {
-        "example.configuration": "example value"
-      }
+    "hive-site": {
+        "hive.support.concurrency": "true",
+        "hive.enforce.bucketing": "true",
+        "hive.exec.dynamic.partition.mode": "nonstrict",
+        "hive.txn.manager": "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager",
+        "hive.compactor.initiator.on": "true",
+        "hive.compactor.worker.threads": "1"
+    },
+    "solr-config": {
+        "solr.download.location": "HDPSEARCH",
+        "solr.znode": "/solr",
+        "solr.cloudmode": "true"
+    },
+    "kafka-broker": {
+        "listeners": "PLAINTEXT://0.0.0.0:6667"
+    },
+    "zeppelin-ambari-config": {
+        "zeppelin.executor.mem": "512m",
+        "zeppelin.executor.instances": "2"
+    }
   }
 }
