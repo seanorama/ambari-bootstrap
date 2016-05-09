@@ -13,7 +13,7 @@ ambari_services=${ambari_services:-AMBARI_METRICS FALCON FLUME
     HBASE HDFS HIVE KAFKA KNOX MAPREDUCE2 OOZIE PIG SLIDER SPARK SQOOP
     STORM TEZ YARN ZOOKEEPER}
 ambari_stack_name="${ambari_stack_name:-HDP}"
-ambari_stack_version="${ambari_stack_version:-2.4}"
+ambari_stack_version="${ambari_stack_version:-2.5}"
 ambari_server=${ambari_server:-localhost}
 ambari_password=${ambari_password:-admin}
 ambari_protocol=${ambari_protocol:-http}
