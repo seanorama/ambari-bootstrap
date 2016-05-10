@@ -58,14 +58,17 @@ esac
 
 ## basic platform detection
 lsb_dist=''
-if [ -z "${lsb_dist}" ] && [ -r /etc/centos-release ]; then
-    lsb_dist='centos'
+if [ -r /etc/centos-release ]; then
+    lsb_dist="centos"
     lsb_dist_release=$(awk '{print $(NF-1)}' /etc/centos-release | cut -d "." -f1)
-fi
-if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
-    lsb_dist='centos'
+elif [ -r /etc/redhat-release ]; then
+    lsb_dist="centos"
     lsb_dist_release=$(awk '{print $(NF-1)}' /etc/redhat-release | cut -d "." -f1)
+elif [ -r /etc/os-release ] && [ $(awk '$1=="ID" {gsub("\"", ""); print $2}' FS='=' /etc/os-release) == "amzn" ]; then
+    lsb_dist="centos"
+    lsb_dist_release=6
 fi
+
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
 ambari_repo="${ambari_repo:-${ambari_repo_baseurl}/${lsb_dist}${lsb_dist_release}/${ambari_version_major}/updates/${ambari_version}/ambari.repo}"
