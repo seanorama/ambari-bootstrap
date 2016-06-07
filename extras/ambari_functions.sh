@@ -1,4 +1,4 @@
-
+#!/usr/bin/env bash
 ## really bad hacked scripts that I've written dozens of times and
 ##   finally going to start consolidating ...
 
