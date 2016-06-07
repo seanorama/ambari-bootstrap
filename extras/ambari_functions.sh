@@ -24,14 +24,14 @@ export ambari_curl="${ambari_curl_cmd} ${ambari_api}"
 
 ## auto-detect cluster
 
-ambari-get-cluster() {
+ambari_get_cluster() {
   ambari_cluster=$(${ambari_curl}/clusters \
       | python -c 'import sys,json; \
             print json.load(sys.stdin)["items"][0]["Clusters"]["cluster_name"]')
 }
 
-ambari-configs() {
-  ambari-get-cluster
+ambari_configs() {
+  ambari_get_cluster
   ambari_configs_sh="/var/lib/ambari-server/resources/scripts/configs.sh \
     -u ${ambari_user} -p ${ambari_pass} \
     -port ${ambari_port} $(if [ ${ambari_protocol} == 'https' ]; then echo '-s '; fi)"
