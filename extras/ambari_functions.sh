@@ -41,7 +41,7 @@ ambari_configs() {
   #defaultfs=$(${config_get} core-site | awk -F'"' '$2 == "fs.defaultFS" {print $4}' | head -1)
 }
 
-ambari-change-pass() {
+ambari_change_pass() {
   # expects: ambari-change-pass username oldpass newpass
 read -r -d '' body <<EOF
 { "Users": { "user_name": "$1", "old_password": "$2", "password": "$3" }}
@@ -83,7 +83,7 @@ function ambari_wait() {
 # Only useful during a fresh install where we expect no failures
 # Will not work if any requested TIMEDOUT/ABORTED
 function ambari_wait_requests_completed() {
-      ambari-get-cluster
+      ambari_get_cluster
       # Poll for completion
       ambari_wait "${ambari_curl}/clusters/${ambari_cluster}/requests \
             | grep -Eo 'http://.*/requests/[^\"]+' \
@@ -96,7 +96,7 @@ function ambari_wait_requests_completed() {
 }
 
 function ambari_wait_request_complete() {
-      ambari-get-cluster
+      ambari_get_cluster
       # Poll for completion
       ambari_wait "${ambari_curl}/clusters/${ambari_cluster}/requests/${1} \
             | grep request_status \
