@@ -1,5 +1,8 @@
 {
   "configurations" : {
+    "hive-env" : {
+        "hive_txn_acid" : "on"
+    },
     "hive-site": {
         "hive.support.concurrency": "true",
         "hive.enforce.bucketing": "true",

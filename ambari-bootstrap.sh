@@ -58,14 +58,17 @@ esac
 
 ## basic platform detection
 lsb_dist=''
-if [ -z "${lsb_dist}" ] && [ -r /etc/centos-release ]; then
-    lsb_dist='centos'
+if [ -r /etc/centos-release ]; then
+    lsb_dist="centos"
     lsb_dist_release=$(awk '{print $(NF-1)}' /etc/centos-release | cut -d "." -f1)
-fi
-if [ -z "${lsb_dist}" ] && [ -r /etc/redhat-release ]; then
-    lsb_dist='centos'
+elif [ -r /etc/redhat-release ]; then
+    lsb_dist="centos"
     lsb_dist_release=$(awk '{print $(NF-1)}' /etc/redhat-release | cut -d "." -f1)
+elif [ -r /etc/os-release ] && [ $(awk '$1=="ID" {gsub("\"", ""); print $2}' FS='=' /etc/os-release) == "amzn" ]; then
+    lsb_dist="centos"
+    lsb_dist_release=6
 fi
+
 lsb_dist="$(echo "${lsb_dist}" | tr '[:upper:]' '[:lower:]')"
 
 ambari_repo="${ambari_repo:-${ambari_repo_baseurl}/${lsb_dist}${lsb_dist_release}/${ambari_version_major}/updates/${ambari_version}/ambari.repo}"
@@ -157,6 +160,7 @@ case "${lsb_dist}" in
             yum install -q -y java-1.${java_version}.0-openjdk-devel
             mkdir -p /usr/java
             ln -sf /etc/alternatives/java_sdk /usr/java/default
+            update-alternatives --set java /usr/lib/jvm/jre-1.${java_version}.0-openjdk.x86_64/bin/java
             JAVA_HOME='/usr/java/default'
         fi
 
