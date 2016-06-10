@@ -160,7 +160,7 @@ case "${lsb_dist}" in
             yum install -q -y java-1.${java_version}.0-openjdk-devel
             mkdir -p /usr/java
             ln -sf /etc/alternatives/java_sdk /usr/java/default
-            update-alternatives --set java /usr/lib/jvm/jre-1.${java_version}.0-openjdk.x86_64/bin/java
+            #update-alternatives --set java /usr/lib/jvm/jre-1.${java_version}.0-openjdk/bin/java
             JAVA_HOME='/usr/java/default'
         fi
 
