@@ -9,7 +9,7 @@ import json
 
 
 DEFAULT_PASSWORD = 'hadoop'
-RECOMMENDATION_STRATEGY = 'ONLY_STACK_DEFAULTS_APPLY'
+#RECOMMENDATION_STRATEGY = 'ONLY_STACK_DEFAULTS_APPLY'
 
 
 def _merge_configurations(recommended_configurations, custom_configurations):
@@ -63,7 +63,7 @@ def create_cluster_template(host_group_recommendation, blueprint_name):
     cluster_template = {}
     cluster_template['blueprint'] = blueprint_name
     cluster_template['default_password'] = DEFAULT_PASSWORD
-    cluster_template['config_recommendation_strategy'] = RECOMMENDATION_STRATEGY
+    #cluster_template['config_recommendation_strategy'] = RECOMMENDATION_STRATEGY
     recommended_template = host_group_recommendation['resources'][0][
             'recommendations']['blueprint_cluster_binding']
     cluster_template.update(recommended_template)
