@@ -20,7 +20,7 @@ __base="$(basename ${__file} .sh)"
 
 ##
 source ${__dir}/../ambari_functions.sh
-ambari-configs
+ambari_configs
 
 ## Get Configs
 realm=$(${ambari_config_get} kerberos-env | awk -F'"' '$2 == "realm" {print $4}' | head -1)

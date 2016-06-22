@@ -10,7 +10,7 @@ __base="$(basename ${__file} .sh)"
 
 source ${__dir}/../ambari_functions.sh
 
-ambari-configs
+ambari_configs
 
 ## Ranger ugsync
 ${ambari_config_set} ranger-ugsync-site ranger.usersync.ldap.ldapbindpassword "${mypass}"

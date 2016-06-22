@@ -33,7 +33,7 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 source ${__dir}/../ambari_functions.sh
-ambari-configs
+ambari_configs
 
 ${ambari_curl}/clusters/${ambari_cluster}/services/KERBEROS -X POST
 ${ambari_curl}/clusters/${ambari_cluster}/services/KERBEROS/components/KERBEROS_CLIENT -X POST

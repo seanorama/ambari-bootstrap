@@ -11,7 +11,7 @@ __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
 source ${__dir}/../ambari_functions.sh
-ambari-configs
+ambari_configs
 
 atlas_host=$(${ambari_config_get} application-properties | awk -F'"' '$2 == "atlas.server.bind.address" {print $4}' | head -1)
 atlas_port=$(${ambari_config_get} atlas-env | awk -F'"' '$2 == "metadata_port" {print $4}' | head -1)

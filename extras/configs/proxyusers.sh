@@ -8,7 +8,7 @@ __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
 source ${__dir}/../ambari_functions.sh
-ambari-configs
+ambari_configs
 
 ## granting root super user rights
 proxyusers="${proxyusers:-hbase hcat hive HTTP knox}"

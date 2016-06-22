@@ -10,8 +10,8 @@ __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
 source ${__dir}/../ambari_functions.sh
-ambari-configs
-ambari-get-cluster
+ambari_configs
+ambari_get_cluster
 
 #keystore=/etc/ranger/admin/rangeradmin.jceks
 #xa_ldap_ad_bind_password="BadPass#1"

@@ -35,7 +35,7 @@ if [ "${custom_repos}" = true  ]; then
     sleep 15
 fi
 
-ambari-configs
+ambari_configs
 
 ## Update to use repos on Google Cloud
 if [ "${custom_repos}" = true  ]; then
