@@ -7,9 +7,7 @@ Will be replaced by Ambari functionality when added.
 import argparse
 import json
 
-
 DEFAULT_PASSWORD = 'hadoop'
-#RECOMMENDATION_STRATEGY = 'ONLY_STACK_DEFAULTS_APPLY'
 
 
 def _merge_configurations(recommended_configurations, custom_configurations):
@@ -58,12 +56,17 @@ def create_blueprint(
     return blueprint
 
 
-def create_cluster_template(host_group_recommendation, blueprint_name):
+def create_cluster_template(
+        host_group_recommendation,
+        blueprint_name,
+        recommendation_strategy):
     """Create Ambari cluster template."""
     cluster_template = {}
     cluster_template['blueprint'] = blueprint_name
     cluster_template['default_password'] = DEFAULT_PASSWORD
-    #cluster_template['config_recommendation_strategy'] = RECOMMENDATION_STRATEGY
+    if recommendation_strategy != 'false':
+        cluster_template[
+            'config_recommendation_strategy'] = recommendation_strategy
     recommended_template = host_group_recommendation['resources'][0][
             'recommendations']['blueprint_cluster_binding']
     cluster_template.update(recommended_template)
@@ -76,7 +79,9 @@ def create_blueprints(
         blueprint_file_name,
         cluster_template_file_name,
         blueprint_name,
-        custom_configuration_file=None):
+        recommendation_strategy,
+        custom_configuration_file=None
+        ):
     """Create and dump Ambari blueprint cluster template."""
     configuration_recommendation = json.load(conf_recommendation_file)
     host_group_recommendation = json.load(host_recommendation_file)
@@ -91,7 +96,7 @@ def create_blueprints(
             custom_configurations)
 
     cluster_template = create_cluster_template(
-            host_group_recommendation, blueprint_name)
+            host_group_recommendation, blueprint_name, recommendation_strategy)
 
     with open(blueprint_file_name, 'w') as blueprint_file:
         json.dump(blueprint, blueprint_file, indent=2)
@@ -109,6 +114,8 @@ def parse_args():
     parser.add_argument('--cluster_template', required=True)
     parser.add_argument('--blueprint_name', required=True)
     parser.add_argument('--custom_configuration', type=file, required=False)
+    parser.add_argument('--recommendation_strategy', required=False,
+                        default='false')
     return parser.parse_args()
 
 
@@ -120,6 +127,7 @@ def main():
             args.blueprint,
             args.cluster_template,
             args.blueprint_name,
+            args.recommendation_strategy,
             args.custom_configuration)
 
 

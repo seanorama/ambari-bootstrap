@@ -13,7 +13,7 @@ ambari_services=${ambari_services:-AMBARI_METRICS FALCON FLUME
     HBASE HDFS HIVE KAFKA KNOX MAPREDUCE2 OOZIE PIG SLIDER SPARK SQOOP
     STORM TEZ YARN ZOOKEEPER}
 ambari_stack_name="${ambari_stack_name:-HDP}"
-ambari_stack_version="${ambari_stack_version:-2.4}"
+: ${ambari_stack_version:=2.4}
 ambari_server=${ambari_server:-localhost}
 ambari_password=${ambari_password:-admin}
 ambari_protocol=${ambari_protocol:-http}
@@ -21,6 +21,8 @@ ambari_port=${ambari_port:-8080}
 cluster_name=${cluster_name:-hdp}
 ambari_blueprint_name="${ambari_blueprint_name:-recommended}"
 deploy=${deploy:-true}
+: ${recommendation_strategy:="false"}  ## valid options:
+## NEVER_APPLY, ONLY_STACK_DEFAULTS_APPLY, ALWAYS_APPLY, ALWAYS_APPLY_DONT_OVERRIDE_CUSTOM_VALUES
 
 ## for curl requests
 ambari_curl="curl -ksSu admin:${ambari_password} -H x-requested-by:ambari"
@@ -138,6 +140,15 @@ EOF
         -d @"${tmp_dir}/request-${recommend}.json" > ${tmp_dir}/${recommend}.json
 done
 
+if [ "${recommendation_strategy}" != 'false' ]; then
+cat > ${tmp_dir}/configurations.json <<-'EOF'
+{ "resources" : [ { "recommendations" : { "blueprint" : { "configurations" : {
+"cluster-env" : { "properties" : { "ambari-bootstrap-filler" :
+"this does nothing but is needed to merge configurations"
+}}}}}}]}
+EOF
+fi
+
 ## merge recommendations with custom configuration
 python ${__dir}/create_blueprint.py \
     --conf_recommendation ${tmp_dir}/configurations.json \
@@ -145,6 +156,7 @@ python ${__dir}/create_blueprint.py \
     --blueprint ${tmp_dir}/blueprint.json \
     --cluster_template ${tmp_dir}/cluster.json \
     --blueprint_name ${ambari_blueprint_name} \
+    --recommendation_strategy "${recommendation_strategy}" \
     --custom_configuration ${__dir}/configuration-custom.json
 
 if [ "${deploy}" = true ]; then
