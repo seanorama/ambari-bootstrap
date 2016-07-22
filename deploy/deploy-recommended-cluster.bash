@@ -142,9 +142,11 @@ done
 
 if [ "${recommendation_strategy}" != 'false' ]; then
 cat > ${tmp_dir}/configurations.json <<-'EOF'
-{ "resources" : [ { "recommendations" : { "blueprint" : { "configurations" : {
-"cluster-env" : { "properties" : { "ambari-bootstrap-filler" :
-"this does nothing but is needed to merge configurations"
+{ "resources" : [ {
+  "Versions" : { "stack_name" : "HDP", "stack_version" : "2.5" },
+  "recommendations" : { "blueprint" : { "configurations" : { "cluster-env" : {
+    "properties" : { "ambari-bootstrap-filler" :
+      "this does nothing but is needed to merge configurations"
 }}}}}}]}
 EOF
 fi
