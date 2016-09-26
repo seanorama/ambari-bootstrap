@@ -141,9 +141,9 @@ EOF
 done
 
 if [ "${recommendation_strategy}" != 'false' ]; then
-cat > ${tmp_dir}/configurations.json <<-'EOF'
+cat > ${tmp_dir}/configurations.json <<EOF
 { "resources" : [ {
-  "Versions" : { "stack_name" : "HDP", "stack_version" : "2.5" },
+  "Versions" : { "stack_name" : "${ambari_stack_name}", "stack_version" : "${ambari_stack_version}" },
   "recommendations" : { "blueprint" : { "configurations" : { "cluster-env" : {
     "properties" : { "ambari-bootstrap-filler" :
       "this does nothing but is needed to merge configurations"
