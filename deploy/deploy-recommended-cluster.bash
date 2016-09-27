@@ -12,15 +12,15 @@ host_count=${host_count:-ask} ## options: the count of hosts, 'ask', 'skip'
 ambari_services=${ambari_services:-AMBARI_METRICS FALCON FLUME
     HBASE HDFS HIVE KAFKA KNOX MAPREDUCE2 OOZIE PIG SLIDER SPARK SQOOP
     STORM TEZ YARN ZOOKEEPER}
-ambari_stack_name="${ambari_stack_name:-HDP}"
-: ${ambari_stack_version:=2.4}
-ambari_server=${ambari_server:-localhost}
-ambari_password=${ambari_password:-admin}
-ambari_protocol=${ambari_protocol:-http}
-ambari_port=${ambari_port:-8080}
-cluster_name=${cluster_name:-hdp}
-ambari_blueprint_name="${ambari_blueprint_name:-recommended}"
-deploy=${deploy:-true}
+: ${ambari_stack_name:="HDP"}
+: ${ambari_stack_version:="2.4"}
+: ${ambari_server:="localhost"}
+: ${ambari_password:="admin"}
+: ${ambari_protocol:="http"}
+: ${ambari_port:="8080"}
+: ${cluster_name:="hdp"}
+: ${ambari_blueprint_name:="recommended"}
+: ${deploy:=true}
 : ${recommendation_strategy:="false"}  ## valid options:
 ## NEVER_APPLY, ONLY_STACK_DEFAULTS_APPLY, ALWAYS_APPLY, ALWAYS_APPLY_DONT_OVERRIDE_CUSTOM_VALUES
 
