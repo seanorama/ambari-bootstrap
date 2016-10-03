@@ -10,9 +10,9 @@
 ## Config: Update or `export` in your shell environment before executing the script
 ad_pass=${ad_pass:-BadPass#1}
 ad_user=${ad_user:-hadoopadmin} ## this is your admin user
-realm=${realm:-HORTONWORKS.COM}
+realm=${realm:-LAB.HORTONWORKS.NET}
 ad_principal=${ad_principal:-"${ad_user}@${realm}"}
-ad_root="${ad_root:-dc=hortonworks,dc=com}"
+ad_root="${ad_root:-dc=lab,dc=hortonworks,dc=net}"
 ad_ou="${ad_ou:-ou=HadoopServices,${ad_root}}"
 admin_host=${admin_host:-lab.hortonworks.net}
 kdc_host=${kdc_host:-${admin_host}}
