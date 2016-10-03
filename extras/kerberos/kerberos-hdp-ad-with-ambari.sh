@@ -14,7 +14,7 @@ realm=${realm:-LAB.HORTONWORKS.NET}
 ad_principal=${ad_principal:-"${ad_user}@${realm}"}
 ad_root="${ad_root:-dc=lab,dc=hortonworks,dc=net}"
 ad_ou="${ad_ou:-ou=HadoopServices,${ad_root}}"
-admin_host=${admin_host:-ad.lab.hortonworks.net}
+admin_host=${admin_host:-ad01.lab.hortonworks.net}
 kdc_host=${kdc_host:-${admin_host}}
 kdc_type=${kdc_type:-"active-directory"}
 ldap_url=${ldap_url:-"ldaps://${admin_host}"}
