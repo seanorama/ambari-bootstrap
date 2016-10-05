@@ -3,7 +3,7 @@
 ## Messy automation:
 ##   Enable Kerberos for HDP using Ambari's Kerberos API
 ##
-## Tested with Ambari 2.1.(0|1) & HDP 2.3.0 & CentOS 6.7
+## Tested with Ambari 2.(1-5) & HDP 2.(3-5) & CentOS (6-7)
 ##
 
 ########################################################################
@@ -36,58 +36,63 @@ source ${__dir}/../ambari_functions.sh
 ambari_configs
 
 ${ambari_curl}/clusters/${ambari_cluster}/services/KERBEROS -X POST
+read -rsp $'Press enter to continue...\n'
 ${ambari_curl}/clusters/${ambari_cluster}/services/KERBEROS/components/KERBEROS_CLIENT -X POST
+read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Uploading config kerberos-env"
 
 echo ${action}
 read -r -d '' body <<EOF
-[ { "Clusters": { "desired_config": { "type": "kerberos-env",
+[
+  {
+    "Clusters": {
+      "desired_config": {
+        "type": "krb5-conf",
         "tag": "version1",
         "properties": {
-          "ad_create_attributes_template" : "\n{\n \"objectClass\": [\"top\", \"person\", \"organizationalPerson\", \"user\"],\n \"cn\": \"\$principal_name\",\n #if( \$is_service )\n \"servicePrincipalName\": \"\$principal_name\",\n #end\n \"userPrincipalName\": \"\$normalized_principal\",\n \"unicodePwd\": \"\$password\",\n \"accountExpires\": \"0\",\n \"userAccountControl\": \"66048\"\n}",
-          "admin_server_host" : "${admin_host}",
-          "case_insensitive_username_rules" : "false",
-          "container_dn" : "${ad_ou}",
-          "encryption_types": "aes des3-cbc-sha1 rc4 des-cbc-md5",
-          "executable_search_paths" : "/usr/bin, /usr/kerberos/bin, /usr/sbin, /usr/lib/mit/bin, /usr/lib/mit/sbin",
-          "install_packages": "true",
-          "kdc_create_attributes" : "",
-          "kdc_host" : "${kdc_host}",
-          "kdc_type" : "${kdc_type}",
-          "ldap_url" : "${ldap_url}",
+          "domains":"${domains}",
+          "manage_krb5_conf": "true",
+          "conf_dir":"/etc",
+          "content" : "[libdefaults]\n  renew_lifetime = 7d\n  forwardable= true\n  default_realm = {{realm|upper()}}\n  ticket_lifetime = 24h\n  dns_lookup_realm = false\n  dns_lookup_kdc = false\n  #default_tgs_enctypes = {{encryption_types}}\n  #default_tkt_enctypes ={{encryption_types}}\n\n{% if domains %}\n[domain_realm]\n{% for domain in domains.split(',') %}\n  {{domain}} = {{realm|upper()}}\n{% endfor %}\n{%endif %}\n\n[logging]\n  default = FILE:/var/log/krb5kdc.log\nadmin_server = FILE:/var/log/kadmind.log\n  kdc = FILE:/var/log/krb5kdc.log\n\n[realms]\n  {{realm}} = {\n    admin_server = {{admin_server_host|default(kdc_host, True)}}\n    kdc = {{kdc_host}}\n }\n\n{# Append additional realm declarations below #}\n"
+        }
+      }
+    }
+  },
+  {
+    "Clusters": {
+      "desired_config": {
+        "type": "kerberos-env",
+        "tag": "version1",
+        "properties": {
+          "kdc_type": "active-directory",
           "manage_identities": "true",
-          "password_length": "20",
-          "password_min_digits": "1",
-          "password_min_lowercase_letters": "1",
-          "password_min_punctuation": "1",
-          "password_min_uppercase_letters": "1",
-          "password_min_whitespace": "0",
+          "install_packages": "true",
+          "encryption_types": "aes des3-cbc-sha1 rc4 des-cbc-md5",
           "realm" : "${realm}",
-          "service_check_principal_name" : "\${cluster_name}-\${short_date}"
+          "kdc_host" : "${kdc_host}",
+          "admin_server_host" : "${kdc_host}",
+          "ldap_url" : "ldaps://${kdc_host}",
+          "container_dn" : "${ad_ou}",
+          "executable_search_paths" : "/usr/bin, /usr/kerberos/bin, /usr/sbin, /usr/lib/mit/bin, /usr/lib/mit/sbin",
+          "password_length": "20",
+          "password_min_lowercase_letters": "1",
+          "password_min_uppercase_letters": "1",
+          "password_min_digits": "1",
+          "password_min_punctuation": "1",
+          "password_min_whitespace": "0",
+          "service_check_principal_name" : "\${cluster_name}-\${short_date}",
+          "case_insensitive_username_rules" : "false",
+          "create_attributes_template" :  "{\n \"objectClass\": [\"top\", \"person\", \"organizationalPerson\", \"user\"],\n \"cn\": \"\$principal_name\",\n #if( \$is_service )\n \"servicePrincipalName\": \"\$principal_name\",\n #end\n \"userPrincipalName\": \"\$normalized_principal\",\n \"unicodePwd\": \"\$password\",\n \"accountExpires\": \"0\",\n \"userAccountControl\": \"66048\"}"
         }
-} } } ]
-EOF
+      }
+    }
+  }
+]
 echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster} -X PUT -d @-
 
-########################################################################
-action="Uploading config krb5-conf"
-
-echo ${action}
-read -r -d '' body <<EOF
-[ { "Clusters": { "desired_config": { "type": "krb5-conf",
-        "tag": "version1",
-        "properties": {
-            "conf_dir" : "/etc",
-            "content" : "\n[libdefaults]\n  renew_lifetime = 7d\n  forwardable = true\n  default_realm = {{realm}}\n  ticket_lifetime = 24h\n  dns_lookup_realm = false\n  dns_lookup_kdc = false\n  #default_tgs_enctypes = {{encryption_types}}\n  #default_tkt_enctypes = {{encryption_types}}\n\n{% if domains %}\n[domain_realm]\n{% for domain in domains.split(',') %}\n  {{domain}} = {{realm}}\n{% endfor %}\n{% endif %}\n\n[logging]\n  default = FILE:/var/log/krb5kdc.log\n  admin_server = FILE:/var/log/kadmind.log\n  kdc = FILE:/var/log/krb5kdc.log\n\n[realms]\n  {{realm}} = {\n    admin_server = {{admin_server_host|default(kdc_host, True)}}\n    kdc = {{kdc_host}}\n  }\n\n{# Append additional realm declarations below #}",
-            "domains" : "${domains}",
-            "manage_krb5_conf" : "true"
-        }
-} } } ]
-EOF
-echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster} -X PUT -d @-
-
+read -rsp $'Press enter to continue...\n'
 ########################################################################
 action="Installing KERBEROS_CLIENT"
 
@@ -106,6 +111,7 @@ EOF
 for host in ${hosts}; do
     echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster}/hosts?Hosts/host_name=${host} -X POST -d @-
 done
+read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Installing KERBEROS service"
@@ -120,6 +126,7 @@ if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
+read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Stopping cluster services"
@@ -134,6 +141,7 @@ if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
+read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Enabling Kerberos"
@@ -151,11 +159,13 @@ read -r -d '' body <<EOF
 }
 EOF
 response=$(echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster} -X PUT -d @-)
+read -rsp $'Press enter to continue...\n'
 
 if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
+read -rsp $'Press enter to continue...\n'
 
 
 ########################################################################
@@ -171,6 +181,7 @@ if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
+read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 echo Done
