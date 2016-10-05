@@ -36,9 +36,7 @@ source ${__dir}/../ambari_functions.sh
 ambari_configs
 
 ${ambari_curl}/clusters/${ambari_cluster}/services/KERBEROS -X POST
-read -rsp $'Press enter to continue...\n'
 ${ambari_curl}/clusters/${ambari_cluster}/services/KERBEROS/components/KERBEROS_CLIENT -X POST
-read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Uploading config kerberos-env"
@@ -90,9 +88,11 @@ read -r -d '' body <<EOF
     }
   }
 ]
+EOF
 echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster} -X PUT -d @-
 
-read -rsp $'Press enter to continue...\n'
+if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
+
 ########################################################################
 action="Installing KERBEROS_CLIENT"
 
@@ -110,8 +110,8 @@ read -r -d '' body <<EOF
 EOF
 for host in ${hosts}; do
     echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster}/hosts?Hosts/host_name=${host} -X POST -d @-
+    if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 done
-read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Installing KERBEROS service"
@@ -126,7 +126,7 @@ if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
-read -rsp $'Press enter to continue...\n'
+
 
 ########################################################################
 action="Stopping cluster services"
@@ -141,7 +141,6 @@ if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
-read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 action="Enabling Kerberos"
@@ -159,13 +158,11 @@ read -r -d '' body <<EOF
 }
 EOF
 response=$(echo "${body}" | ${ambari_curl}/clusters/${ambari_cluster} -X PUT -d @-)
-read -rsp $'Press enter to continue...\n'
 
 if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
-read -rsp $'Press enter to continue...\n'
 
 
 ########################################################################
@@ -181,7 +178,6 @@ if [ $? != 0 ]; then echo "Error while ${action}"; exit 1; fi
 
 request_id=$(echo ${response} | python -c 'import sys,json; print json.load(sys.stdin)["Requests"]["id"]')
 ambari_wait_request_complete ${request_id}
-read -rsp $'Press enter to continue...\n'
 
 ########################################################################
 echo Done
