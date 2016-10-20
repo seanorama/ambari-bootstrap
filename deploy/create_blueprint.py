@@ -32,6 +32,8 @@ def _fix_components(blueprint):
                 components.remove(entry)
         if {'name': 'HIVE_METASTORE'} in components:
             components.append({'name': 'MYSQL_SERVER'})
+        if {'name': 'HIVE_INTERACTIVE'} in components:
+            components.remove({'name': 'HIVE_INTERACTIVE'})
         if {'name': 'HBASE_MASTER'} in components:
             if {'name': 'PHOENIX_QUERY_SERVER'} not in components:
                 components.append({'name': 'PHOENIX_QUERY_SERVER'})
