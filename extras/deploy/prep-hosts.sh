@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mypass="${mypass:-BadPass#1}"
+: ${ambari_pass:="BadPass#1"}
 
 sudo yum makecache
 sudo yum -y -q install git epel-release screen mlocate python-configobj bind-utils
@@ -18,10 +18,10 @@ sudo sed -i.bak -e 's/^\(PasswordAuthentication\) no/\1 yes/' -e 's/^\(Challenge
 sudo service sshd restart
 
 ## add all users to 'users' group
-users="admin rangeradmin keyadmin student masterclass"
+users="admin student masterclass"
 for user in ${users}; do
     sudo useradd ${user}
-    printf "${mypass}\n${mypass}" | sudo passwd --stdin ${user}
+    printf "${ambari_pass}\n${ambari_pass}" | sudo passwd --stdin ${user}
     echo "${user} ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/99-masterclass
 done
 sudo useradd -r ambari
