@@ -23,7 +23,7 @@ def _merge_configurations(recommended_configurations, custom_configurations):
 def _fix_components(blueprint):
     """Remove ZKFC move MYSQL_SERVER by HIVE_METASTORE."""
     # TODO(user): Determine why this is an issue
-    problem_components = ['ZKFC', 'MYSQL_SERVER', 'HIVE_SERVER_INTERACIVE']
+    problem_components = ['ZKFC', 'MYSQL_SERVER', 'HIVE_SERVER_INTERACTIVE']
     for host_group in blueprint['host_groups']:
         components = host_group['components']
         for problem_component in problem_components:
