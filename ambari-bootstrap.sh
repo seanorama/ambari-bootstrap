@@ -35,14 +35,14 @@ command_exists() {
 }
 
 check_firewall() {
-type_firewall=$(rpm -qa | egrep firewalld)
-#type_firewall=$(yum list | egrep firewalld)
+#type_firewall=$(rpm -qa | egrep firewalld)
+type_firewall=$(yum list | egrep firewalld)
 if [ -n "${type_firewall}" ]; then
     ver_firewall="firewalld"
 else
     ver_firewall="iptables"
 fi
-#ver_firewall="$(echo "${ver_firewall}" | tr '[:upper:]' '[:lower:]')"
+ver_firewall="$(echo "${ver_firewall}" | tr '[:upper:]' '[:lower:]')"
 }
 
 if [ ! "$(hostname -f)" ]; then
@@ -135,7 +135,6 @@ case "${lsb_dist}" in
         (
             set +o errexit
 
-
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
 
@@ -168,11 +167,6 @@ case "${lsb_dist}" in
                         service ip6tables stop || true
                      ;;
                 esac
-                #printf "## Info: Disabling iptables\n"
-                #chkconfig iptables off || true
-                #service iptables stop || true
-                #chkconfig ip6tables off || true
-                #service ip6tables stop || true
             fi
 
             printf "## Syncing time via ntpd\n"
