@@ -34,6 +34,17 @@ command_exists() {
     command -v "$@" > /dev/null 2>&1
 }
 
+check_firewall() {
+#type_firewall=$(rpm -qa | egrep firewalld)
+type_firewall=$(yum list | egrep firewalld)
+if [ -n "${type_firewall}" ]; then
+    ver_firewall="firewalld"
+else
+    ver_firewall="iptables"
+fi
+ver_firewall="$(echo "${ver_firewall}" | tr '[:upper:]' '[:lower:]')"
+}
+
 if [ ! "$(hostname -f)" ]; then
     printf >&2 'Error: "hostname -f" failed to report an FQDN.\n'
     printf >&2 'The system must report a FQDN in order to use Ambari\n'
@@ -124,7 +135,6 @@ case "${lsb_dist}" in
         (
             set +o errexit
 
-
             printf "## Info: Disabling IPv6\n"
             my_disable_ipv6
 
@@ -142,11 +152,21 @@ case "${lsb_dist}" in
             my_disable_thp
 
             if [ "${iptables_disable}" = true ]; then
-                printf "## Info: Disabling iptables\n"
-                chkconfig iptables off || true
-                service iptables stop || true
-                chkconfig ip6tables off || true
-                service ip6tables stop || true
+                check_firewall
+                case "${ver_firewall}" in
+                    firewalld)
+                        printf "## Info: Disabling firewalld\n"
+                        systemctl disable firewalld || true
+                        systemctl stop firewalld || true
+                    ;;
+                    iptables)
+                        printf "## Info: Disabling iptables\n"
+                        chkconfig iptables off || true
+                        service iptables stop || true
+                        chkconfig ip6tables off || true
+                        service ip6tables stop || true
+                     ;;
+                esac
             fi
 
             printf "## Syncing time via ntpd\n"
