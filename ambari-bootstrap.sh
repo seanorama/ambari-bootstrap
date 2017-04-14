@@ -35,8 +35,7 @@ command_exists() {
 }
 
 check_firewall() {
-#type_firewall=$(rpm -qa | egrep firewalld)
-type_firewall=$(yum list | egrep firewalld)
+type_firewall=$(yum list installed | egrep ^firewalld)
 if [ -n "${type_firewall}" ]; then
     ver_firewall="firewalld"
 else
