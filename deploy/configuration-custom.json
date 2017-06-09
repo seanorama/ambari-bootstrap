@@ -1,18 +1,19 @@
 {
   "configurations" : {
-    "hive-env" : {
-        "hive_txn_acid" : "on"
-    },
     "hive-site": {
-        "hive.support.concurrency": "true",
-        "hive.enforce.bucketing": "true",
-        "hive.exec.dynamic.partition.mode": "nonstrict",
-        "hive.txn.manager": "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager",
-        "hive.compactor.initiator.on": "true",
-        "hive.compactor.worker.threads": "1"
+        "hive.server2.enable.doAs" : "true",
+        "hive.server2.transport.mode": "http",
+        "hive.exec.compress.output": "true",
+        "hive.merge.mapfiles": "true",
+        "hive.server2.tez.initialize.default.sessions": "true"
     },
-    "kafka-broker": {
-        "listeners": "PLAINTEXT://0.0.0.0:6667"
+    "mapred-site": {
+        "mapreduce.job.reduce.slowstart.completedmaps": "0.7",
+        "mapreduce.map.output.compress": "true",
+        "mapreduce.output.fileoutputformat.compress": "true"
+    },
+    "yarn-site": {
+        "yarn.acl.enable" : "true"
     }
   }
 }
