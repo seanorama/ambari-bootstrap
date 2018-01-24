@@ -59,6 +59,8 @@ fi
 case "$(uname -m)" in
     *64)
         ;;
+    *ppc64*)
+        ;;        
     *)
         printf >&2 'Error: you are not using a 64bit platform.\n'
         printf >&2 'This installer requires a 64bit platforms.\n'
