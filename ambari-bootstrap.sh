@@ -57,6 +57,8 @@ if [ "$(id -ru)" != 0 ]; then
 fi
 
 case "$(uname -m)" in
+    *ppc64*)
+        ;;
     *64)
         ;;
     *)
