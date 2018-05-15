@@ -192,8 +192,7 @@ case "${lsb_dist}" in
         if [ "${install_ambari_agent}" = true ]; then
             printf "## installing ambari-agent\n"
             yum install -q -y ambari-agent
-            sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
-                        -r 's/\[security\]/\[security\]\nforce_https_protocol=PROTOCOL_TLSv1_2/' \
+             sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/;s/\[security\]/\[security\]\nforce_https_protocol=PROTOCOL_TLSv1_2/' \
                 /etc/ambari-agent/conf/ambari-agent.ini
             chkconfig ambari-agent on
             ambari-agent start
