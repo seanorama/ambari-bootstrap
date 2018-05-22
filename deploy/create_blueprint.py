@@ -35,6 +35,10 @@ def _fix_components(blueprint):
         if {'name': 'HBASE_MASTER'} in components:
             if {'name': 'PHOENIX_QUERY_SERVER'} not in components:
                 components.append({'name': 'PHOENIX_QUERY_SERVER'})
+         if {'name': 'SPARK2_JOBHISTORYSERVER'} in components:
+            if {'name': 'LIVY2_SERVER'} not in components:
+                components.append({'name': 'LIVY2_SERVER'})
+
 
 
 def create_blueprint(
