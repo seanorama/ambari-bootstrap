@@ -188,6 +188,8 @@ case "${lsb_dist}" in
         printf "## fetch ambari repo\n"
         ${curl} -o /etc/yum.repos.d/ambari.repo \
             "${ambari_repo}"
+            
+        sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ambari.repo 
 
         if [ "${install_ambari_agent}" = true ]; then
             printf "## installing ambari-agent\n"
