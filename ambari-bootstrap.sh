@@ -188,11 +188,13 @@ case "${lsb_dist}" in
         printf "## fetch ambari repo\n"
         ${curl} -o /etc/yum.repos.d/ambari.repo \
             "${ambari_repo}"
+            
+        sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ambari.repo 
 
         if [ "${install_ambari_agent}" = true ]; then
             printf "## installing ambari-agent\n"
             yum install -q -y ambari-agent
-            sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/' \
+             sed -i.orig -r 's/^[[:space:]]*hostname=.*/hostname='"${ambari_server}"'/;s/\[security\]/\[security\]\nforce_https_protocol=PROTOCOL_TLSv1_2/' \
                 /etc/ambari-agent/conf/ambari-agent.ini
             chkconfig ambari-agent on
             ambari-agent start
