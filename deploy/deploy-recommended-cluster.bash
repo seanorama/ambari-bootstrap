@@ -9,11 +9,11 @@ set -o pipefail
 
 ## allowed overrides for these
 host_count=${host_count:-ask} ## options: the count of hosts, 'ask', 'skip'
-ambari_services=${ambari_services:-AMBARI_METRICS FALCON FLUME
-    HBASE HDFS HIVE KAFKA KNOX MAPREDUCE2 OOZIE PIG SLIDER SPARK SQOOP
-    STORM TEZ YARN ZOOKEEPER}
+ambari_services=${ambari_services:-AMBARI_METRICS
+    HBASE HDFS HIVE KAFKA KNOX MAPREDUCE2 SPARK2 SQOOP
+    TEZ YARN ZOOKEEPER}
 : ${ambari_stack_name:="HDP"}
-: ${ambari_stack_version:="2.5"}
+: ${ambari_stack_version:="3.1"}
 : ${ambari_server:="localhost"}
 : ${ambari_password:="admin"}
 : ${ambari_protocol:="http"}
